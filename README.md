@@ -9,7 +9,7 @@ OpenClaw agents can have 30–50+ tools available. Every tool description is inj
 ## How It Works
 
 ```
-User prompt → gpt-5.4-mini classifier (~1.1s, parallel)
+User prompt → lightweight classifier LLM (~1s, parallel)
                     ↓
             Tool selection + confidence score
                     ↓
@@ -20,9 +20,9 @@ User prompt → gpt-5.4-mini classifier (~1.1s, parallel)
             Primary model sees only relevant tools (67% fewer)
 ```
 
-1. **LLM always classifies** — A fast, cheap model (`gpt-5.4-mini`) analyzes each prompt and selects which tools the primary model actually needs
+1. **LLM always classifies** — A fast, cheap classifier model analyzes each prompt and selects which tools the primary model actually needs. Any OpenAI-compatible LLM works; we tested 6 models and recommend `gpt-5.4-mini` (see [Benchmark](#benchmark-accuracy-v32)).
 2. **Keyword cache validates** — A learned cache cross-checks the LLM's selection, merging any tools the classifier may have missed. The cache never narrows — it only adds.
-3. **Core tools always included** — `read`, `write`, `edit`, `exec`, `process`, `memory_search`, `memory_add`, `session_status` are always available regardless of classification
+3. **Core tools always included** — `read`, `write`, `edit`, `exec`, `process`, `memory_search`, `memory_add`, `session_status` are always available regardless of classification.
 4. **Graceful fallback** — On LLM timeout or error, falls back to keyword-based classification. On low confidence, returns the full tool surface.
 
 ## Production Results
@@ -63,7 +63,7 @@ User prompt → gpt-5.4-mini classifier (~1.1s, parallel)
 | grok-4.1-fast | 91.0% | 91.2% | 80.2% | 4,089ms |
 | gemini-3-flash | 64.6% | 64.1% | 89.4% | 1,454ms |
 
-**Key finding:** The smallest, cheapest model (gpt-5.4-mini) outperforms all larger models. Tool classification is a structured routing task — over-reasoning hurts accuracy. This confirms our hypothesis that description quality, not model size, drives classification performance.
+**Key finding:** The smallest, cheapest model outperforms all larger models on this task. Tool classification is a structured routing problem — over-reasoning hurts accuracy. Description quality, not model size, is the primary driver. The classifier model is configurable; we recommend `gpt-5.4-mini` based on these results.
 
 ## Installation
 
@@ -125,9 +125,10 @@ This plugin requires the `before_prompt_build` hook to return `toolsAllow`, whic
 
 ### LLM API Access
 
-The resolver needs access to a fast, cheap LLM for classification. Recommended:
-- **gpt-5.4-mini** via OpenAI API or LiteLLM proxy (best accuracy + speed)
-- Any OpenAI-compatible API endpoint
+The resolver needs access to a fast, cheap LLM for classification. Any OpenAI-compatible endpoint works. We benchmarked 6 models and recommend:
+- **gpt-5.4-mini** — best accuracy (99.1%), fastest (856ms p50), cheapest
+- **claude-sonnet-4-6** — strong alternative (98.4%) if you're already routing through Anthropic
+- See [Benchmark](#benchmark-accuracy-v32) for the full comparison
 
 ## Architecture
 
