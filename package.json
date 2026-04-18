@@ -1,0 +1,44 @@
+{
+  "name": "openclaw-tool-resolver",
+  "version": "0.1.0",
+  "description": "Dynamic per-turn tool surface resolver for OpenClaw — LLM classification + keyword validation, 67% token reduction",
+  "type": "module",
+  "main": "index.js",
+  "author": "Andrew Stroup <andrew.m.stroup@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stroupaloop/openclaw-tool-resolver.git"
+  },
+  "homepage": "https://github.com/stroupaloop/openclaw-tool-resolver#readme",
+  "bugs": {
+    "url": "https://github.com/stroupaloop/openclaw-tool-resolver/issues"
+  },
+  "keywords": [
+    "openclaw",
+    "ai",
+    "tools",
+    "llm",
+    "agent",
+    "plugin",
+    "token-optimization",
+    "context-window",
+    "tool-selection",
+    "cost-reduction",
+    "gpt",
+    "claude",
+    "prompt-engineering"
+  ],
+  "files": [
+    "index.js",
+    "openclaw.plugin.json",
+    "benchmark/"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

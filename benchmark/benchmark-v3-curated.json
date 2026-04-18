@@ -1,0 +1,1089 @@
+{
+  "version": "v3.1-curated-r3",
+  "generated_at": "2026-04-17T21:04:05.929292",
+  "model": "gpt-5.4-mini",
+  "total_cases": 116,
+  "categories": {
+    "financial": 12,
+    "messaging": 10,
+    "research": 15,
+    "creative": 10,
+    "browser": 8,
+    "scheduling": 8,
+    "ops": 10,
+    "devices": 8,
+    "coding": 10,
+    "core-only": 10,
+    "multi-domain": 10,
+    "memory": 5
+  },
+  "cases": [
+    {
+      "prompt": "What's my current cash position across all accounts, and which accounts are driving the biggest balance changes this month?",
+      "expected_tools": [
+        "monarch-money__get_accounts",
+        "monarch-money__get_cashflow"
+      ],
+      "category": "financial",
+      "notes": "Needs account balances plus cashflow trend analysis.",
+      "id": 1
+    },
+    {
+      "prompt": "Refresh my connected accounts and then tell me if anything failed to sync or looks stale.",
+      "expected_tools": [
+        "monarch-money__get_accounts",
+        "monarch-money__refresh_accounts"
+      ],
+      "category": "financial",
+      "notes": "Edge case: requires forcing a sync before checking account status.",
+      "id": 2
+    },
+    {
+      "prompt": "Can you summarize spending by category for the last 30 days and flag any unusual spikes?",
+      "expected_tools": [
+        "monarch-money__get_transaction_categories",
+        "monarch-money__get_transactions"
+      ],
+      "category": "financial",
+      "notes": "Needs transaction detail and category mapping.",
+      "id": 3
+    },
+    {
+      "prompt": "Show me how much we spent on travel, meals, and software this quarter, and compare it to the budget.",
+      "expected_tools": [
+        "monarch-money__get_budgets",
+        "monarch-money__get_transaction_categories",
+        "monarch-money__get_transactions"
+      ],
+      "category": "financial",
+      "notes": "Requires budget data plus categorized transactions.",
+      "id": 4
+    },
+    {
+      "prompt": "Which budget categories are over or near limit this month, and what are the main transactions causing it?",
+      "expected_tools": [
+        "monarch-money__get_budgets",
+        "monarch-money__get_transaction_categories",
+        "monarch-money__get_transactions"
+      ],
+      "category": "financial",
+      "notes": "Budget variance analysis with transaction attribution.",
+      "id": 5
+    },
+    {
+      "prompt": "Build a simple cashflow forecast for the next two weeks using my recent transaction patterns.",
+      "expected_tools": [
+        "code_execution",
+        "monarch-money__get_transactions"
+      ],
+      "category": "financial",
+      "notes": "Uses historical transactions and code for projection.",
+      "id": 6
+    },
+    {
+      "prompt": "Export a table of all transactions over $500 from the last 60 days, grouped by category and merchant.",
+      "expected_tools": [
+        "code_execution",
+        "monarch-money__get_transaction_categories",
+        "monarch-money__get_transactions"
+      ],
+      "category": "financial",
+      "notes": "Requires filtering, grouping, and formatting.",
+      "id": 7
+    },
+    {
+      "prompt": "I think a payment posted twice yesterday. Check recent transactions and tell me if there are duplicates.",
+      "expected_tools": [
+        "code_execution",
+        "monarch-money__get_transactions"
+      ],
+      "category": "financial",
+      "notes": "Edge case: duplicate detection from raw transaction data.",
+      "id": 8
+    },
+    {
+      "prompt": "What are my current budgets, and which categories have no transactions yet this month?",
+      "expected_tools": [
+        "monarch-money__get_budgets",
+        "monarch-money__get_transaction_categories",
+        "monarch-money__get_transactions"
+      ],
+      "category": "financial",
+      "notes": "Combines budget list with absence-of-activity check.",
+      "id": 9
+    },
+    {
+      "prompt": "Show me all accounts with negative balances or overdraft risk, and explain whether cashflow suggests this is temporary.",
+      "expected_tools": [
+        "monarch-money__get_accounts",
+        "monarch-money__get_cashflow"
+      ],
+      "category": "financial",
+      "notes": "Needs balance inspection and cashflow context.",
+      "id": 10
+    },
+    {
+      "prompt": "I need a month-end finance snapshot: total balances, spending by category, budget status, and cashflow summary.",
+      "expected_tools": [
+        "monarch-money__get_accounts",
+        "monarch-money__get_budgets",
+        "monarch-money__get_cashflow",
+        "monarch-money__get_transaction_categories",
+        "monarch-money__get_transactions"
+      ],
+      "category": "financial",
+      "notes": "Broad multi-tool financial summary.",
+      "id": 11
+    },
+    {
+      "prompt": "Find every transaction labeled as 'uncategorized' or missing a category, then estimate how much of monthly spending is still unclassified.",
+      "expected_tools": [
+        "code_execution",
+        "monarch-money__get_transaction_categories",
+        "monarch-money__get_transactions"
+      ],
+      "category": "financial",
+      "notes": "Edge case: uncategorized classification and aggregation.",
+      "id": 12
+    },
+    {
+      "prompt": "Tell Jordan I\u2019m running 10 minutes late to the board meeting and ask if we can push my slot to the end.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Simple outbound message with scheduling context.",
+      "id": 13
+    },
+    {
+      "prompt": "Text Maya and the finance team: I approved the revised budget, but please hold the vendor payment until legal signs off.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Group communication with a finance-related instruction.",
+      "id": 14
+    },
+    {
+      "prompt": "Call or message the recruiter and tell them I\u2019m interested, but I need the interview moved from Thursday to next week.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Requires outreach and rescheduling via messaging.",
+      "id": 15
+    },
+    {
+      "prompt": "Send a quick update to the ops channel: the deployment is delayed, the cause is known, and I\u2019ll share an ETA in 30 minutes.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Internal status update to a team channel.",
+      "id": 16
+    },
+    {
+      "prompt": "Please message Priya and ask her to resend the latest contract draft, since the attachment in the last email was corrupted.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Follow-up request with a specific reason.",
+      "id": 17
+    },
+    {
+      "prompt": "Set a recurring reminder text to me every Friday at 4 PM: review cash flow, runway, and overdue invoices.",
+      "expected_tools": [
+        "cron",
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Needs messaging plus scheduled recurrence.",
+      "id": 18
+    },
+    {
+      "prompt": "Send an apology to Alex: I missed the call because of a travel delay, and I\u2019d like to reconnect tomorrow morning if possible.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Personal apology and re-engagement.",
+      "id": 19
+    },
+    {
+      "prompt": "Notify the team that I\u2019m in a no-signal area for the next two hours, so urgent issues should go through Sarah.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Availability notice with escalation path.",
+      "id": 20
+    },
+    {
+      "prompt": "Draft and send a concise thank-you message to the investor after the meeting, but don\u2019t mention the fundraising timeline yet.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Polite outbound message with content constraint.",
+      "id": 21
+    },
+    {
+      "prompt": "Every Monday at 8 AM, send me a message with the top three priorities for the week and a reminder to check my calendar.",
+      "expected_tools": [
+        "cron",
+        "message"
+      ],
+      "category": "messaging",
+      "notes": "Scheduled recurring self-message.",
+      "id": 22
+    },
+    {
+      "prompt": "Find the latest SEC filing and recent news on Stripe\u2019s valuation changes this quarter.",
+      "expected_tools": [
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "research",
+      "notes": "Needs current web search plus fetching source pages.",
+      "id": 23
+    },
+    {
+      "prompt": "Pull the most recent X posts from Sam Altman about AI regulation and summarize the themes.",
+      "expected_tools": [
+        "x_search"
+      ],
+      "category": "research",
+      "notes": "Social media lookup on X only.",
+      "id": 24
+    },
+    {
+      "prompt": "Compare three AI coding tools for startup use and give me a recommendation with a quick table.",
+      "expected_tools": [
+        "web_search"
+      ],
+      "category": "research",
+      "notes": "Requires current product research and lightweight analysis.",
+      "id": 25
+    },
+    {
+      "prompt": "Read this PDF investor memo and extract the key financial assumptions, risks, and next steps.",
+      "expected_tools": [
+        "pdf"
+      ],
+      "category": "research",
+      "notes": "Document extraction from a PDF.",
+      "id": 26
+    },
+    {
+      "prompt": "I need a quick market scan: what are competitors saying about pricing changes in the enterprise AI space?",
+      "expected_tools": [
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "research",
+      "notes": "Broad web research across multiple sources.",
+      "id": 27
+    },
+    {
+      "prompt": "Search X for reactions to the latest OpenAI release and summarize sentiment from founders and engineers.",
+      "expected_tools": [
+        "x_search"
+      ],
+      "category": "research",
+      "notes": "X-only sentiment scan.",
+      "id": 28
+    },
+    {
+      "prompt": "Can you analyze this CSV of monthly burn and runway, then tell me whether we should cut spend?",
+      "expected_tools": [
+        "code_execution"
+      ],
+      "category": "research",
+      "notes": "Data analysis requires code execution.",
+      "id": 29
+    },
+    {
+      "prompt": "Find the original source for this claim about GPU shortages, then verify whether it\u2019s still true today.",
+      "expected_tools": [
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "research",
+      "notes": "Source tracing and verification.",
+      "id": 30
+    },
+    {
+      "prompt": "I pasted a long PDF of a legal contract\u2014extract all clauses mentioning termination, renewal, and exclusivity.",
+      "expected_tools": [
+        "pdf"
+      ],
+      "category": "research",
+      "notes": "Structured extraction from a PDF.",
+      "id": 31
+    },
+    {
+      "prompt": "Research whether the new FTC guidance affects our planned data-sharing workflow, and cite primary sources.",
+      "expected_tools": [
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "research",
+      "notes": "Primary-source policy research.",
+      "id": 32
+    },
+    {
+      "prompt": "Launch parallel research on three cloud providers\u2019 enterprise AI offerings and return a concise comparison.",
+      "expected_tools": [
+        "sessions_spawn",
+        "sessions_yield"
+      ],
+      "category": "research",
+      "notes": "Parallel sub-research requires session orchestration.",
+      "id": 33
+    },
+    {
+      "prompt": "Use subagents to gather independent summaries of the top five competitors in our space, then merge them.",
+      "expected_tools": [
+        "subagents"
+      ],
+      "category": "research",
+      "notes": "Explicit multi-agent research workflow.",
+      "id": 34
+    },
+    {
+      "prompt": "Check the latest web sources on the EU AI Act, then cross-check against commentary on X for startup impact.",
+      "expected_tools": [
+        "web_fetch",
+        "web_search",
+        "x_search"
+      ],
+      "category": "research",
+      "notes": "Combines web and X research.",
+      "id": 35
+    },
+    {
+      "prompt": "I need the latest benchmarks on GPT-4.1 vs Claude vs Gemini, and a small script to normalize the scores.",
+      "expected_tools": [
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "research",
+      "notes": "Research plus simple computation.",
+      "id": 36
+    },
+    {
+      "prompt": "Review this research paper PDF and tell me whether its methodology is sound enough to inform product decisions.",
+      "expected_tools": [
+        "pdf"
+      ],
+      "category": "research",
+      "notes": "Document review and evaluation.",
+      "id": 37
+    },
+    {
+      "prompt": "Create a polished hero image for our CEO\u2019s LinkedIn post announcing the new funding round. Use our brand colors, include a subtle upward growth motif, and make it look premium and trustworthy.",
+      "expected_tools": [
+        "image_generate"
+      ],
+      "category": "creative",
+      "notes": "Needs a generated marketing visual.",
+      "id": 38
+    },
+    {
+      "prompt": "Turn this product launch script into a 45-second voiceover in a calm, confident startup-announcer style. Make it sound natural, not robotic, and suitable for a demo video.",
+      "expected_tools": [
+        "tts"
+      ],
+      "category": "creative",
+      "notes": "Requires text-to-speech for narration.",
+      "id": 39
+    },
+    {
+      "prompt": "Make a short animated teaser for our new mobile app: sleek UI shots, fast cuts, subtle motion graphics, and a final call-to-action. Keep it under 20 seconds.",
+      "expected_tools": [
+        "video_generate"
+      ],
+      "category": "creative",
+      "notes": "Needs generated video content.",
+      "id": 40
+    },
+    {
+      "prompt": "Review this screenshot of the dashboard and tell me whether the spacing, typography, and color contrast feel premium enough for a board presentation.",
+      "expected_tools": [
+        "image"
+      ],
+      "category": "creative",
+      "notes": "Requires image understanding of an uploaded screenshot.",
+      "id": 41
+    },
+    {
+      "prompt": "Fetch the latest design trends for startup landing pages in 2026, then summarize what visual style would best fit a high-trust fintech brand.",
+      "expected_tools": [
+        "web_fetch"
+      ],
+      "category": "creative",
+      "notes": "Needs current web research.",
+      "id": 42
+    },
+    {
+      "prompt": "Generate a clean cover image for our internal podcast episode on founder burnout. It should feel empathetic, modern, and not overly corporate.",
+      "expected_tools": [
+        "image_generate"
+      ],
+      "category": "creative",
+      "notes": "Requires custom cover art.",
+      "id": 43
+    },
+    {
+      "prompt": "Create a 30-second product explainer video from this concept: a founder uses our platform to automate weekly reporting and save time. Make it visually engaging and easy to understand.",
+      "expected_tools": [
+        "video_generate"
+      ],
+      "category": "creative",
+      "notes": "Needs generated explainer video.",
+      "id": 44
+    },
+    {
+      "prompt": "Convert this customer testimonial into a warm, natural-sounding spoken clip for social media. Keep the pacing upbeat and remove any awkward pauses.",
+      "expected_tools": [
+        "tts"
+      ],
+      "category": "creative",
+      "notes": "Requires voice rendering of text.",
+      "id": 45
+    },
+    {
+      "prompt": "Analyze this mockup and tell me if the layout would work for a mobile-first investor update. Focus on readability, hierarchy, and whether the main message lands instantly.",
+      "expected_tools": [
+        "image"
+      ],
+      "category": "creative",
+      "notes": "Requires visual analysis of a mockup.",
+      "id": 46
+    },
+    {
+      "prompt": "Look up a few examples of high-performing SaaS launch videos and summarize the common creative patterns we should copy for our own campaign.",
+      "expected_tools": [
+        "web_fetch"
+      ],
+      "category": "creative",
+      "notes": "Needs current examples from the web.",
+      "id": 47
+    },
+    {
+      "prompt": "Check the latest SEC filing for Stripe and summarize any new risks or revenue changes relevant to a possible partnership.",
+      "expected_tools": [
+        "web_fetch"
+      ],
+      "category": "browser",
+      "notes": "Needs live web lookup plus page retrieval for recent filing details.",
+      "id": 48
+    },
+    {
+      "prompt": "Find three current competitors to our startup in the AI scheduling space and compare their pricing pages.",
+      "expected_tools": [
+        "web_fetch"
+      ],
+      "category": "browser",
+      "notes": "Requires browsing current websites and fetching pricing content.",
+      "id": 49
+    },
+    {
+      "prompt": "Look up the venue website and confirm whether the conference has ADA-accessible seating and a public transit option.",
+      "expected_tools": [
+        "web_fetch"
+      ],
+      "category": "browser",
+      "notes": "Needs live venue info from website pages.",
+      "id": 50
+    },
+    {
+      "prompt": "Search for the latest documentation on the OpenAI API rate limits and extract the exact limits for paid accounts.",
+      "expected_tools": [
+        "web_fetch"
+      ],
+      "category": "browser",
+      "notes": "Requires current docs and precise text extraction.",
+      "id": 51
+    },
+    {
+      "prompt": "Find a recent news article about our biggest competitor\u2019s funding round and tell me the amount and investors.",
+      "expected_tools": [
+        "web_fetch"
+      ],
+      "category": "browser",
+      "notes": "Needs current news search and article retrieval.",
+      "id": 52
+    },
+    {
+      "prompt": "Browse LinkedIn and the company site to verify whether the new CTO at Acme is the same person mentioned in the press release.",
+      "expected_tools": [
+        "browser",
+        "web_fetch"
+      ],
+      "category": "browser",
+      "notes": "Cross-checking identities across live web sources.",
+      "id": 53
+    },
+    {
+      "prompt": "I uploaded a screenshot of a dashboard error. Read it and tell me what the error message says, then find the relevant docs.",
+      "expected_tools": [
+        "image",
+        "web_fetch"
+      ],
+      "category": "browser",
+      "notes": "Requires image interpretation plus web lookup for docs.",
+      "id": 54
+    },
+    {
+      "prompt": "Compare the latest iPhone and Pixel product pages and tell me which one has the better battery life claim.",
+      "expected_tools": [
+        "web_fetch"
+      ],
+      "category": "browser",
+      "notes": "Needs current product page comparison and extraction of claims.",
+      "id": 55
+    },
+    {
+      "prompt": "Move my 3:00 PM with Priya to tomorrow afternoon and tell her I\u2019m running late.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "scheduling",
+      "notes": "Reschedule an existing meeting and notify the attendee.",
+      "id": 56
+    },
+    {
+      "prompt": "Set a reminder every weekday at 8:30 AM to review the board deck, starting next Monday.",
+      "expected_tools": [
+        "cron"
+      ],
+      "category": "scheduling",
+      "notes": "Recurring schedule creation with a future start date.",
+      "id": 57
+    },
+    {
+      "prompt": "Can you find a 30-minute slot next week for me and Jordan, then send him the invite once you pick one?",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "scheduling",
+      "notes": "Needs scheduling logic plus outbound communication.",
+      "id": 58
+    },
+    {
+      "prompt": "Cancel my 1-on-1 with Ava on Friday and let her know I\u2019ll reconnect after the product launch.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "scheduling",
+      "notes": "Cancellation with notification; no new event creation required.",
+      "id": 59
+    },
+    {
+      "prompt": "Schedule a daily check-in for the ops team at 9 AM on weekdays, but skip holidays.",
+      "expected_tools": [
+        "cron"
+      ],
+      "category": "scheduling",
+      "notes": "Recurring weekday schedule with exception handling.",
+      "id": 60
+    },
+    {
+      "prompt": "Please remind me in 45 minutes to leave for the airport, and text my driver too.",
+      "expected_tools": [
+        "cron",
+        "message"
+      ],
+      "category": "scheduling",
+      "notes": "Timed reminder plus message to a third party.",
+      "id": 61
+    },
+    {
+      "prompt": "Push my dentist appointment back one hour and confirm the new time with the office.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "scheduling",
+      "notes": "Time adjustment and external confirmation.",
+      "id": 62
+    },
+    {
+      "prompt": "Book me a 15-minute buffer after every investor call this week so I don\u2019t get back-to-back meetings.",
+      "expected_tools": [
+        "cron"
+      ],
+      "category": "scheduling",
+      "notes": "Scheduling rule that applies after events across a time range.",
+      "id": 63
+    },
+    {
+      "prompt": "Show me all active support sessions from the last 24 hours and summarize any that were reopened after being closed.",
+      "expected_tools": [
+        "sessions_history",
+        "sessions_list"
+      ],
+      "category": "ops",
+      "notes": "Needs current session inventory plus historical state changes.",
+      "id": 64
+    },
+    {
+      "prompt": "Schedule a recurring 8:30 AM Monday finance review reminder starting next week and ending at the end of Q2.",
+      "expected_tools": [
+        "cron"
+      ],
+      "category": "ops",
+      "notes": "Requires recurring schedule creation.",
+      "id": 65
+    },
+    {
+      "prompt": "Send the latest weekly ops report to the CEO\u2019s Slack and email, and make sure both messages go out now.",
+      "expected_tools": [
+        "gateway"
+      ],
+      "category": "ops",
+      "notes": "Requires external communications delivery.",
+      "id": 66
+    },
+    {
+      "prompt": "Spin up a coding subagent to investigate why the deployment script failed yesterday and propose a fix.",
+      "expected_tools": [
+        "subagents"
+      ],
+      "category": "ops",
+      "notes": "Needs delegated investigation work.",
+      "id": 67
+    },
+    {
+      "prompt": "List all sessions related to the payroll incident and show their full history, including who resumed each one.",
+      "expected_tools": [
+        "sessions_history",
+        "sessions_list"
+      ],
+      "category": "ops",
+      "notes": "Combines filtering with audit trail.",
+      "id": 68
+    },
+    {
+      "prompt": "At 6 PM every weekday, ping me if any customer escalations are still unresolved.",
+      "expected_tools": [
+        "cron"
+      ],
+      "category": "ops",
+      "notes": "Recurring conditional reminder requires scheduling.",
+      "id": 69
+    },
+    {
+      "prompt": "Text the facilities vendor to confirm tomorrow\u2019s office maintenance window and ask them to reply if the timing changes.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "ops",
+      "notes": "External message delivery to a third party.",
+      "id": 70
+    },
+    {
+      "prompt": "Create a subagent to review our AWS cost spikes, then have it return the top three likely causes with evidence.",
+      "expected_tools": [
+        "sessions_spawn"
+      ],
+      "category": "ops",
+      "notes": "Delegated analysis task.",
+      "id": 71
+    },
+    {
+      "prompt": "Find the session where we discussed the board deck last week, then show every status change from creation to close.",
+      "expected_tools": [
+        "sessions_history",
+        "sessions_list"
+      ],
+      "category": "ops",
+      "notes": "Requires locating a session and auditing its lifecycle.",
+      "id": 72
+    },
+    {
+      "prompt": "Set a one-time reminder for 15 minutes before my 2 PM call, but only if the meeting is still on my calendar.",
+      "expected_tools": [
+        "cron"
+      ],
+      "category": "ops",
+      "notes": "Edge case: time-based reminder with conditional execution.",
+      "id": 73
+    },
+    {
+      "prompt": "Turn off the office lights, set the thermostat to 72, and lock the front door after everyone leaves.",
+      "expected_tools": [
+        "nodes"
+      ],
+      "category": "devices",
+      "notes": "Needs device control plus a confirmation/status message.",
+      "id": 74
+    },
+    {
+      "prompt": "If the conference room projector is still on, power it down and let me know when it\u2019s done.",
+      "expected_tools": [
+        "nodes"
+      ],
+      "category": "devices",
+      "notes": "Simple remote device action with user notification.",
+      "id": 75
+    },
+    {
+      "prompt": "Start the morning routine: lights to 40%, open the blinds, and play the daily briefing in the kitchen.",
+      "expected_tools": [
+        "nodes"
+      ],
+      "category": "devices",
+      "notes": "Multiple smart-home device actions and completion update.",
+      "id": 76
+    },
+    {
+      "prompt": "The team is complaining the Wi\u2011Fi is flaky. Reboot the office router if it\u2019s safe, but only after checking whether anyone is in a critical call.",
+      "expected_tools": [
+        "nodes"
+      ],
+      "category": "devices",
+      "notes": "Edge case involving conditional device control and user communication.",
+      "id": 77
+    },
+    {
+      "prompt": "I\u2019m leaving in 5 minutes\u2014arm the security system, close the garage, and make sure the back door sensor reports closed.",
+      "expected_tools": [
+        "nodes"
+      ],
+      "category": "devices",
+      "notes": "Multi-device arming/closing sequence with status confirmation.",
+      "id": 78
+    },
+    {
+      "prompt": "Mute all conference room speakers immediately; we\u2019re hearing feedback during the all-hands.",
+      "expected_tools": [
+        "nodes"
+      ],
+      "category": "devices",
+      "notes": "Urgent single-action device command plus acknowledgement.",
+      "id": 79
+    },
+    {
+      "prompt": "If my laptop is still connected to the dock in the office, safely eject it and power down the dock after 6 PM.",
+      "expected_tools": [
+        "nodes"
+      ],
+      "category": "devices",
+      "notes": "Conditional timing-based device operation.",
+      "id": 80
+    },
+    {
+      "prompt": "Find the nearest available meeting room with a working display, then turn on the screen and set the room to presentation mode.",
+      "expected_tools": [
+        "nodes"
+      ],
+      "category": "devices",
+      "notes": "Requires device/location selection and control, plus a response back to the user.",
+      "id": 81
+    },
+    {
+      "prompt": "Spin up two parallel agents to inspect the payment webhook bug and the dashboard UI regression, then summarize findings in one thread.",
+      "expected_tools": [
+        "sessions_spawn"
+      ],
+      "category": "coding",
+      "notes": "Requires parallel investigation and later consolidation.",
+      "id": 82
+    },
+    {
+      "prompt": "List all active coding sessions, identify which one is stalled, and continue only the one touching the billing service.",
+      "expected_tools": [
+        "sessions_list"
+      ],
+      "category": "coding",
+      "notes": "Needs session discovery before resuming a specific task.",
+      "id": 83
+    },
+    {
+      "prompt": "Create a fresh agent to refactor the auth module, and keep the main session free while it runs.",
+      "expected_tools": [
+        "sessions_spawn"
+      ],
+      "category": "coding",
+      "notes": "Requires delegating work to a separate coding agent.",
+      "id": 84
+    },
+    {
+      "prompt": "I have three code review threads running. Show me the session list, then yield the one with the highest-priority hotfix and ignore the rest.",
+      "expected_tools": [
+        "sessions_list",
+        "sessions_yield"
+      ],
+      "category": "coding",
+      "notes": "Session selection based on priority.",
+      "id": 85
+    },
+    {
+      "prompt": "Launch a subagent to trace the intermittent test failure, and another to check whether the CI config changed today.",
+      "expected_tools": [
+        "sessions_spawn"
+      ],
+      "category": "coding",
+      "notes": "Parallel diagnostics across code and CI.",
+      "id": 86
+    },
+    {
+      "prompt": "Find all open coding sessions, then yield the one working on the API rate limiter. If none exist, spawn a new one.",
+      "expected_tools": [
+        "sessions_list",
+        "sessions_spawn",
+        "sessions_yield"
+      ],
+      "category": "coding",
+      "notes": "Edge case: fallback to creating a new session.",
+      "id": 87
+    },
+    {
+      "prompt": "Use a separate agent to compare the old and new implementations of the scheduler, then report only the behavioral differences.",
+      "expected_tools": [
+        "sessions_spawn"
+      ],
+      "category": "coding",
+      "notes": "Delegated code comparison.",
+      "id": 88
+    },
+    {
+      "prompt": "Check which sessions are active right now, and hand off the database migration task to the least busy one.",
+      "expected_tools": [
+        "sessions_list"
+      ],
+      "category": "coding",
+      "notes": "Requires listing sessions before assigning work.",
+      "id": 89
+    },
+    {
+      "prompt": "I need you to debug the flaky onboarding test in parallel with a second agent reviewing the failing stack trace. Merge the conclusions afterward.",
+      "expected_tools": [
+        "sessions_spawn"
+      ],
+      "category": "coding",
+      "notes": "Parallel debugging with synthesis.",
+      "id": 90
+    },
+    {
+      "prompt": "Show me every current coding session, then spawn a new agent only if none of them are already investigating the deployment rollback issue.",
+      "expected_tools": [
+        "sessions_list",
+        "sessions_spawn"
+      ],
+      "category": "coding",
+      "notes": "Conditional session creation based on existing work.",
+      "id": 91
+    },
+    {
+      "prompt": "Draft a concise weekly status update for the CEO based on these notes: fundraising is on track, two hires are in final rounds, and the product launch slipped by one week.",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "Can be handled entirely with drafting from provided text.",
+      "id": 92
+    },
+    {
+      "prompt": "Summarize the key risks in this meeting transcript and turn them into a bullet list for me to review.",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "Requires only reading and summarizing supplied content.",
+      "id": 93
+    },
+    {
+      "prompt": "Help me rewrite this email so it sounds firmer but still professional: 'We need the invoice corrected before we can process payment.'",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "Pure writing/editing task.",
+      "id": 94
+    },
+    {
+      "prompt": "Create a simple checklist for preparing the board deck tomorrow morning using these items: metrics, hiring, cash runway, and launch timeline.",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "No external actions needed.",
+      "id": 95
+    },
+    {
+      "prompt": "Compare these two short candidate notes and tell me which one is a better fit for a fast-moving startup, with one sentence of reasoning.",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "Analysis of provided text only.",
+      "id": 96
+    },
+    {
+      "prompt": "Turn this rough idea into a polished Slack message: 'Can we push the sync to 3pm? I need more time to review the doc.'",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "Rewriting task with no tool dependency.",
+      "id": 97
+    },
+    {
+      "prompt": "Extract all action items, owners, and deadlines from the notes below and format them as a table.",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "Structured extraction from supplied notes.",
+      "id": 98
+    },
+    {
+      "prompt": "Write a short apology note to a vendor for the delayed response and ask them to resend the latest contract version.",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "Can be generated directly.",
+      "id": 99
+    },
+    {
+      "prompt": "I\u2019m overwhelmed. Based on this list of tasks, help me prioritize the top three for today and explain why in one line each.",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "Prioritization from user-provided list.",
+      "id": 100
+    },
+    {
+      "prompt": "Convert this messy paragraph into a clean executive summary under 100 words, keeping the main decision and next steps.",
+      "expected_tools": [],
+      "category": "core-only",
+      "notes": "Formatting and summarization only.",
+      "id": 101
+    },
+    {
+      "prompt": "Find the latest SEC filing for our top competitor, summarize any new risks, and message me if their guidance changed materially.",
+      "expected_tools": [
+        "message",
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "multi-domain",
+      "notes": "Needs live web lookup, page retrieval, and outbound notification.",
+      "id": 102
+    },
+    {
+      "prompt": "Check tomorrow\u2019s meeting windows across my calendar and the CEO\u2019s, then draft a concise reschedule message for any conflicts.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "multi-domain",
+      "notes": "Requires external scheduling context and communication.",
+      "id": 103
+    },
+    {
+      "prompt": "Pull the newest pricing page from our vendor, compare it with last quarter\u2019s numbers, and flag any increase over 8%.",
+      "expected_tools": [
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "multi-domain",
+      "notes": "Needs web discovery, page content extraction, and numeric comparison.",
+      "id": 104
+    },
+    {
+      "prompt": "Research three current payroll providers, summarize pros and cons, and send me the shortlist with a recommendation.",
+      "expected_tools": [
+        "message",
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "multi-domain",
+      "notes": "Requires live research and outbound summary.",
+      "id": 105
+    },
+    {
+      "prompt": "Read the latest incident postmortem from our status page, determine whether customer credits are needed, and notify finance if yes.",
+      "expected_tools": [
+        "message",
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "multi-domain",
+      "notes": "Needs fetching incident details and messaging a stakeholder.",
+      "id": 106
+    },
+    {
+      "prompt": "Analyze this CSV of monthly expenses, identify anomalies, and draft a message to the team explaining the biggest spikes.",
+      "expected_tools": [
+        "code_execution",
+        "message"
+      ],
+      "category": "multi-domain",
+      "notes": "Requires data analysis and communication.",
+      "id": 107
+    },
+    {
+      "prompt": "Find the latest API docs for Stripe webhooks, verify the event name for failed payments, and tell me whether our integration is outdated.",
+      "expected_tools": [
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "multi-domain",
+      "notes": "Needs current documentation lookup and verification.",
+      "id": 108
+    },
+    {
+      "prompt": "Spin up two parallel research agents: one to compare cloud storage vendors, one to compare backup vendors, then merge the findings into a single brief.",
+      "expected_tools": [
+        "sessions_spawn"
+      ],
+      "category": "multi-domain",
+      "notes": "Requires parallel agent sessions plus live research.",
+      "id": 109
+    },
+    {
+      "prompt": "Look up today\u2019s market news on our main supplier, assess whether the disruption affects next week\u2019s shipment, and message operations with a risk note.",
+      "expected_tools": [
+        "message",
+        "web_fetch",
+        "web_search"
+      ],
+      "category": "multi-domain",
+      "notes": "Needs real-time news, source retrieval, and stakeholder alert.",
+      "id": 110
+    },
+    {
+      "prompt": "Use the attached budget table to forecast runway under three hiring scenarios, then message me the safest option and any assumptions you made.",
+      "expected_tools": [
+        "code_execution",
+        "message"
+      ],
+      "category": "multi-domain",
+      "notes": "Requires calculations/forecasting and a concise report.",
+      "id": 111
+    },
+    {
+      "prompt": "What was the name of the investor I mentioned last week who wanted the follow-up deck, and can you pull the exact note about their preferred timeline?",
+      "expected_tools": [],
+      "category": "memory",
+      "notes": "Requires finding a prior memory and retrieving a specific stored detail.",
+      "id": 112
+    },
+    {
+      "prompt": "Please remember that my preferred daily standup time is now 9:15 AM instead of 9:00 AM, and keep that updated going forward.",
+      "expected_tools": [],
+      "category": "memory",
+      "notes": "Updates an existing preference and may add it if no prior memory exists.",
+      "id": 113
+    },
+    {
+      "prompt": "Delete the old note about using the Q2 board deck template; we switched to the new format and that reminder is no longer relevant.",
+      "expected_tools": [],
+      "category": "memory",
+      "notes": "Removes a stale memory after locating it.",
+      "id": 114
+    },
+    {
+      "prompt": "List everything you remember about my travel preferences, especially airlines, seat choices, and any recurring constraints.",
+      "expected_tools": [],
+      "category": "memory",
+      "notes": "Requests a full listing of a memory category or related stored items.",
+      "id": 115
+    },
+    {
+      "prompt": "I just changed my backup contact from Maya to Jordan for urgent approvals\u2014please store that, and if you already have Maya saved, replace it everywhere.",
+      "expected_tools": [],
+      "category": "memory",
+      "notes": "Edge case involving replacing an existing contact and ensuring the new value is stored.",
+      "id": 116
+    }
+  ],
+  "curated_at": "2026-04-17T21:08:46.567698"
+}

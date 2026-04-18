@@ -1,0 +1,34 @@
+{
+  "id": "openclaw-tool-resolver",
+  "kind": "agents",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable dynamic tool narrowing"
+      },
+      "logDecisions": {
+        "type": "boolean",
+        "default": true,
+        "description": "Log resolver decisions for telemetry"
+      },
+      "telemetryFile": {
+        "type": "string",
+        "default": "",
+        "description": "Path to append per-turn telemetry JSONL (empty = no file logging)"
+      },
+      "profiles": {
+        "type": "object",
+        "default": {},
+        "description": "Named tool profiles: { profileName: { tools: [...], keywords: [...] } }"
+      }
+    }
+  },
+  "uiHints": {
+    "enabled": { "label": "Enable Resolver" },
+    "logDecisions": { "label": "Log Decisions" },
+    "telemetryFile": { "label": "Telemetry File", "placeholder": "~/.openclaw/workspace/resolver-telemetry.jsonl" }
+  }
+}
