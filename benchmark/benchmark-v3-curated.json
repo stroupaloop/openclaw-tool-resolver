@@ -21,8 +21,8 @@
     {
       "prompt": "What's my current cash position across all accounts, and which accounts are driving the biggest balance changes this month?",
       "expected_tools": [
-        "monarch-money__get_accounts",
-        "monarch-money__get_cashflow"
+        "finance__get_accounts",
+        "finance__get_cashflow"
       ],
       "category": "financial",
       "notes": "Needs account balances plus cashflow trend analysis.",
@@ -31,8 +31,8 @@
     {
       "prompt": "Refresh my connected accounts and then tell me if anything failed to sync or looks stale.",
       "expected_tools": [
-        "monarch-money__get_accounts",
-        "monarch-money__refresh_accounts"
+        "finance__get_accounts",
+        "finance__refresh_accounts"
       ],
       "category": "financial",
       "notes": "Edge case: requires forcing a sync before checking account status.",
@@ -41,8 +41,8 @@
     {
       "prompt": "Can you summarize spending by category for the last 30 days and flag any unusual spikes?",
       "expected_tools": [
-        "monarch-money__get_transaction_categories",
-        "monarch-money__get_transactions"
+        "finance__get_transaction_categories",
+        "finance__get_transactions"
       ],
       "category": "financial",
       "notes": "Needs transaction detail and category mapping.",
@@ -51,9 +51,9 @@
     {
       "prompt": "Show me how much we spent on travel, meals, and software this quarter, and compare it to the budget.",
       "expected_tools": [
-        "monarch-money__get_budgets",
-        "monarch-money__get_transaction_categories",
-        "monarch-money__get_transactions"
+        "finance__get_budgets",
+        "finance__get_transaction_categories",
+        "finance__get_transactions"
       ],
       "category": "financial",
       "notes": "Requires budget data plus categorized transactions.",
@@ -62,9 +62,9 @@
     {
       "prompt": "Which budget categories are over or near limit this month, and what are the main transactions causing it?",
       "expected_tools": [
-        "monarch-money__get_budgets",
-        "monarch-money__get_transaction_categories",
-        "monarch-money__get_transactions"
+        "finance__get_budgets",
+        "finance__get_transaction_categories",
+        "finance__get_transactions"
       ],
       "category": "financial",
       "notes": "Budget variance analysis with transaction attribution.",
@@ -74,7 +74,7 @@
       "prompt": "Build a simple cashflow forecast for the next two weeks using my recent transaction patterns.",
       "expected_tools": [
         "code_execution",
-        "monarch-money__get_transactions"
+        "finance__get_transactions"
       ],
       "category": "financial",
       "notes": "Uses historical transactions and code for projection.",
@@ -84,8 +84,8 @@
       "prompt": "Export a table of all transactions over $500 from the last 60 days, grouped by category and merchant.",
       "expected_tools": [
         "code_execution",
-        "monarch-money__get_transaction_categories",
-        "monarch-money__get_transactions"
+        "finance__get_transaction_categories",
+        "finance__get_transactions"
       ],
       "category": "financial",
       "notes": "Requires filtering, grouping, and formatting.",
@@ -95,7 +95,7 @@
       "prompt": "I think a payment posted twice yesterday. Check recent transactions and tell me if there are duplicates.",
       "expected_tools": [
         "code_execution",
-        "monarch-money__get_transactions"
+        "finance__get_transactions"
       ],
       "category": "financial",
       "notes": "Edge case: duplicate detection from raw transaction data.",
@@ -104,9 +104,9 @@
     {
       "prompt": "What are my current budgets, and which categories have no transactions yet this month?",
       "expected_tools": [
-        "monarch-money__get_budgets",
-        "monarch-money__get_transaction_categories",
-        "monarch-money__get_transactions"
+        "finance__get_budgets",
+        "finance__get_transaction_categories",
+        "finance__get_transactions"
       ],
       "category": "financial",
       "notes": "Combines budget list with absence-of-activity check.",
@@ -115,8 +115,8 @@
     {
       "prompt": "Show me all accounts with negative balances or overdraft risk, and explain whether cashflow suggests this is temporary.",
       "expected_tools": [
-        "monarch-money__get_accounts",
-        "monarch-money__get_cashflow"
+        "finance__get_accounts",
+        "finance__get_cashflow"
       ],
       "category": "financial",
       "notes": "Needs balance inspection and cashflow context.",
@@ -125,11 +125,11 @@
     {
       "prompt": "I need a month-end finance snapshot: total balances, spending by category, budget status, and cashflow summary.",
       "expected_tools": [
-        "monarch-money__get_accounts",
-        "monarch-money__get_budgets",
-        "monarch-money__get_cashflow",
-        "monarch-money__get_transaction_categories",
-        "monarch-money__get_transactions"
+        "finance__get_accounts",
+        "finance__get_budgets",
+        "finance__get_cashflow",
+        "finance__get_transaction_categories",
+        "finance__get_transactions"
       ],
       "category": "financial",
       "notes": "Broad multi-tool financial summary.",
@@ -139,8 +139,8 @@
       "prompt": "Find every transaction labeled as 'uncategorized' or missing a category, then estimate how much of monthly spending is still unclassified.",
       "expected_tools": [
         "code_execution",
-        "monarch-money__get_transaction_categories",
-        "monarch-money__get_transactions"
+        "finance__get_transaction_categories",
+        "finance__get_transactions"
       ],
       "category": "financial",
       "notes": "Edge case: uncategorized classification and aggregation.",

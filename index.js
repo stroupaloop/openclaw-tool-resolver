@@ -67,12 +67,12 @@ const TOOL_DESCRIPTIONS = {
   memory_update: 'Update memory',
   memory_event_list: 'List memory events',
   memory_event_status: 'Memory event status',
-  'monarch-money__get_accounts': 'Get linked financial accounts',
-  'monarch-money__get_budgets': 'Get budget information',
-  'monarch-money__get_cashflow': 'Analyze cashflow data',
-  'monarch-money__get_transaction_categories': 'List transaction categories',
-  'monarch-money__get_transactions': 'Fetch financial transactions',
-  'monarch-money__refresh_accounts': 'Refresh all financial account data',
+  'finance__get_accounts': 'Get linked financial accounts',
+  'finance__get_budgets': 'Get budget information',
+  'finance__get_cashflow': 'Analyze cashflow data',
+  'finance__get_transaction_categories': 'List transaction categories',
+  'finance__get_transactions': 'Fetch financial transactions',
+  'finance__refresh_accounts': 'Refresh all financial account data',
 };
 
 // ── Metadata Stripping ─────────────────────────────────────────────────────
@@ -273,8 +273,8 @@ const LEGACY_PROFILES = {
     keywords: ['research', 'analyze', 'investigate', 'compare', 'evaluate', 'market', 'report', 'search', 'find', 'look up', 'xllm', 'deep dive', 'brief', 'arxiv', 's-1'],
   },
   financial: {
-    tools: ['monarch-money__get_accounts', 'monarch-money__get_budgets', 'monarch-money__get_cashflow', 'monarch-money__get_transaction_categories', 'monarch-money__get_transactions', 'monarch-money__refresh_accounts', 'code_execution'],
-    keywords: ['budget', 'expense', 'transaction', 'financial', 'monarch', 'spending', 'cashflow', 'cost', 'revenue', 'quickbooks'],
+    tools: ['finance__get_accounts', 'finance__get_budgets', 'finance__get_cashflow', 'finance__get_transaction_categories', 'finance__get_transactions', 'finance__refresh_accounts', 'code_execution'],
+    keywords: ['budget', 'expense', 'transaction', 'financial', 'spending', 'cashflow', 'cost', 'revenue'],
   },
   messaging: {
     tools: ['message', 'tts'],
@@ -354,7 +354,7 @@ export default definePluginEntry({
     const telemetryFile = config.telemetryFile || '';
 
     const llmModel = config.llmModel || 'gpt-5.4-mini';
-    const llmApiBase = config.llmApiBase || 'http://localhost:4000';
+    const llmApiBase = config.llmApiBase || 'https://api.openai.com/v1';
     const llmApiKey = config.llmApiKey || '';
     const capturePrompts = config.capturePrompts !== false;
     const promptExcerptLength = config.promptExcerptLength || 1500;

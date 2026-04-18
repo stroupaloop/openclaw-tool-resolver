@@ -1,10 +1,10 @@
 {
   "name": "openclaw-tool-resolver",
   "version": "0.1.0",
-  "description": "Dynamic per-turn tool surface resolver for OpenClaw — LLM classification + keyword validation, 67% token reduction",
+  "description": "Dynamic per-turn tool surface resolver for OpenClaw \u2014 LLM classification + keyword validation, 67% token reduction",
   "type": "module",
   "main": "index.js",
-  "author": "Andrew Stroup <andrew.m.stroup@gmail.com>",
+  "author": "Andrew Stroup",
   "license": "MIT",
   "repository": {
     "type": "git",

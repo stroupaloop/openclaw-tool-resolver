@@ -91,7 +91,7 @@ Add to your `~/.openclaw/openclaw.json`:
       "logDecisions": true,
       "telemetryFile": "~/.openclaw/workspace/resolver-telemetry.jsonl",
       "llmModel": "gpt-5.4-mini",
-      "llmApiBase": "http://localhost:4000",
+      "llmApiBase": "https://api.openai.com/v1",
       "llmApiKey": "YOUR_API_KEY"
     }
   }
@@ -106,7 +106,7 @@ Add to your `~/.openclaw/openclaw.json`:
 | `logDecisions` | `true` | Log classification decisions to OpenClaw logs |
 | `telemetryFile` | `""` | Path for JSONL telemetry (empty = disabled) |
 | `llmModel` | `gpt-5.4-mini` | Classification model |
-| `llmApiBase` | `http://localhost:4000` | LLM API endpoint (LiteLLM, OpenAI, etc.) |
+| `llmApiBase` | `https://api.openai.com/v1` | LLM API endpoint (LiteLLM, OpenAI, etc.) |
 | `llmApiKey` | `""` | API key for the classification model |
 | `capturePrompts` | `true` | Include prompt excerpts in telemetry |
 | `promptExcerptLength` | `1500` | Max prompt chars in telemetry |
@@ -142,7 +142,7 @@ The resolver classifies prompts into functional categories and selects tools acc
 - **Core** (always included): `read`, `write`, `edit`, `exec`, `process`, `memory_search`, `memory_add`, `session_status`
 - **Research**: `web_search`, `web_fetch`, `x_search`, `code_execution`, `pdf`
 - **Coding**: `sessions_spawn`, `sessions_yield`, `subagents`
-- **Financial**: `monarch-money__*` tools, `code_execution`
+- **Financial**: `finance__*` tools, `code_execution`
 - **Messaging**: `message`, `tts`
 - **Media**: `image_generate`, `video_generate`, `tts`, `image`
 - **Ops**: `browser`, `cron`, `gateway`
