@@ -1,6 +1,6 @@
 # openclaw-tool-resolver
 
-Dynamic per-turn tool surface resolver for [OpenClaw](https://github.com/openclaw/openclaw). Reduces token usage by 67% by intelligently narrowing the tool list before each LLM call.
+Dynamic per-turn tool surface resolver for [OpenClaw](https://github.com/openclaw/openclaw). Reduces token usage by **67%** by intelligently narrowing the tool list before each LLM call.
 
 ## The Problem
 
@@ -50,16 +50,20 @@ User prompt → gpt-5.4-mini classifier (~1.1s, parallel)
 
 **Even on the cheapest model, the resolver pays for itself 35x over.**
 
-### Benchmark Accuracy
+### Benchmark Accuracy (v3.2)
 
-116 curated test cases across 7 tool categories:
+145 curated test cases across 14 categories, 3 runs per model:
 
-| Model | Accuracy | Recall | p50 Latency |
-|-------|----------|--------|-------------|
-| gpt-5.4-mini | **100%** | 97% | 2,663ms |
-| gpt-5.4-nano | 98.3% | 94% | 1,841ms |
-| claude-haiku-4-5 | 97.4% | 93% | 2,105ms |
-| grok-4.1-fast | 95.7% | 91% | 1,950ms |
+| Model | Accuracy | Recall | Precision | p50 Latency |
+|-------|----------|--------|-----------|-------------|
+| **gpt-5.4-mini** | **99.1%** | 94.8% | 81.2% | **856ms** |
+| claude-sonnet-4-6 | 98.4% | 94.1% | 74.5% | 1,615ms |
+| gpt-5.4 | 94.3% | 91.9% | 81.3% | 1,190ms |
+| claude-haiku-4-5 | 92.6% | 89.3% | 76.1% | 1,070ms |
+| grok-4.1-fast | 91.0% | 91.2% | 80.2% | 4,089ms |
+| gemini-3-flash | 64.6% | 64.1% | 89.4% | 1,454ms |
+
+**Key finding:** The smallest, cheapest model (gpt-5.4-mini) outperforms all larger models. Tool classification is a structured routing task — over-reasoning hurts accuracy. This confirms our hypothesis that description quality, not model size, drives classification performance.
 
 ## Installation
 
@@ -122,8 +126,7 @@ This plugin requires the `before_prompt_build` hook to return `toolsAllow`, whic
 ### LLM API Access
 
 The resolver needs access to a fast, cheap LLM for classification. Recommended:
-- **gpt-5.4-mini** via OpenAI API or LiteLLM proxy (best accuracy)
-- **gpt-5.4-nano** for lowest cost with slightly lower accuracy
+- **gpt-5.4-mini** via OpenAI API or LiteLLM proxy (best accuracy + speed)
 - Any OpenAI-compatible API endpoint
 
 ## Architecture
@@ -150,31 +153,42 @@ The resolver classifies prompts into functional categories and selects tools acc
 
 ## Benchmark Suite
 
-The repo includes a comprehensive benchmark framework with 116 curated test cases:
+The repo includes a comprehensive benchmark framework:
 
 ```bash
 cd benchmark
 
-# Run single-model benchmark
-python3 replay-harness.py --file benchmark-v3-curated.json --verbose
+# Run single-model benchmark (default: gpt-5.4-mini)
+LLM_MODEL=gpt-5.4-mini python3 replay-harness.py --file benchmark-v3.2-curated.json --verbose
 
-# Compare multiple models
+# Specify different model
+LLM_MODEL=claude-sonnet-4-6 python3 replay-harness.py --file benchmark-v3.2-curated.json
+
+# Multi-model comparison
 python3 model-benchmark.py
 
 # Generate new test cases from production telemetry
 python3 generate-cases.py --input ~/resolver-telemetry.jsonl
-
-# Monthly benchmark + report
-python3 monthly-benchmark.py
 ```
 
-### Benchmark Metrics
+### Benchmark v3.2 — 145 Cases
+
+| Stat | Value |
+|------|-------|
+| Total cases | 145 |
+| Categories | 14 (financial, research, messaging, coding, ops, creative, browser, scheduling, devices, memory, workspace, multi-domain, core-only, adversarial) |
+| Tool coverage | 93% (39/42 tools) |
+| Single-tool cases | 72 |
+| Multi-tool cases | 42 |
+| Zero-tool (core-only) | 31 |
+| Adversarial cases | 10 |
+
+### Metrics
 
 - **must_include_accuracy**: Required tools present in selection (primary metric)
 - **avg_recall**: Proportion of expected tools selected
 - **precision**: How many selected tools were actually needed
 - **latency**: Classification response time (p50, p95)
-- **cost_per_1k**: API cost per 1,000 classifications
 
 ## Telemetry
 
@@ -198,12 +212,23 @@ When `telemetryFile` is configured, the resolver logs one JSONL entry per turn:
 
 **Privacy**: Telemetry captures prompt excerpts by default for debugging. Set `capturePrompts: false` to disable. No telemetry is sent externally — all data stays local.
 
+## Related Work
+
+Several benchmarks evaluate LLM tool use, but none address the specific task of tool *pre-filtering* in production assistants:
+
+- **[BFCL v4](https://gorilla.cs.berkeley.edu/leaderboard.html)** (Berkeley) — Measures function-calling accuracy (parameter extraction). Our task is upstream: tool *selection*, not invocation.
+- **[RAG-MCP](https://arxiv.org/abs/2505.03275) / [ScaleMCP](https://arxiv.org/abs/2505.06416)** — Closest analogues; evaluate tool retrieval at scale using synthetic tool sets. Our work differs in using production-deployed tools with iteratively refined descriptions.
+- **LiveToolBench, ToolSandbox** — End-to-end execution evaluation, architecturally downstream from our classification step.
+
+No existing benchmark targets the pre-filter classification task in production AI assistants. We constructed a deployment-specific corpus of 145 cases across 14 categories and validated across 6 LLMs. We acknowledge this limits direct cross-benchmark comparison, though the methodology is reproducible and the harness is open-source.
+
 ## Roadmap
 
 - [ ] Dynamic tool descriptions (generate per-turn instead of static map)
 - [ ] Confidence-weighted caching (weight cache entries by LLM confidence)
 - [ ] Multi-agent profile sharing (shared keyword cache across agents)
 - [ ] Dashboard integration (real-time savings visualization)
+- [ ] Automated monthly benchmark regression with CI
 
 ## Contributing
 

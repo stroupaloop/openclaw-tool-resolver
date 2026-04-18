@@ -1,0 +1,50 @@
+name: Benchmark Regression
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run benchmark
+        env:
+          LLM_API_BASE: ${{ secrets.LLM_API_BASE }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: gpt-5.4-mini
+        run: |
+          cd benchmark
+          python3 replay-harness.py \
+            --file benchmark-v3.2-curated.json \
+            --output /tmp/benchmark-result.json
+
+      - name: Check accuracy threshold
+        run: |
+          python3 -c "
+          import json, sys
+          with open('/tmp/benchmark-result.json') as f:
+              data = json.load(f)
+          acc = data['must_include_accuracy']
+          print(f'Must-Include Accuracy: {acc*100:.1f}%')
+          if acc < 0.95:
+              print(f'FAIL: accuracy {acc*100:.1f}% below 95% threshold')
+              sys.exit(1)
+          print('PASS')
+          "
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: /tmp/benchmark-result.json

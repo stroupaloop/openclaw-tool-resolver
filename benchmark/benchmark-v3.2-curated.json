@@ -1,21 +1,23 @@
 {
-  "version": "v3.1-curated-r3",
+  "version": "v3.2-final",
   "generated_at": "2026-04-17T21:04:05.929292",
   "model": "gpt-5.4-mini",
-  "total_cases": 116,
+  "total_cases": 145,
   "categories": {
-    "financial": 12,
-    "messaging": 10,
+    "ops": 17,
     "research": 15,
-    "creative": 10,
-    "browser": 8,
-    "scheduling": 8,
-    "ops": 10,
-    "devices": 8,
+    "financial": 12,
+    "creative": 11,
+    "memory": 11,
+    "messaging": 10,
     "coding": 10,
     "core-only": 10,
     "multi-domain": 10,
-    "memory": 5
+    "adversarial": 10,
+    "browser": 8,
+    "scheduling": 8,
+    "devices": 8,
+    "workspace": 5
   },
   "cases": [
     {
@@ -1083,7 +1085,240 @@
       "category": "memory",
       "notes": "Edge case involving replacing an existing contact and ensuring the new value is stored.",
       "id": 116
+    },
+    {
+      "prompt": "Read the contents of MEMORY.md and tell me what's in there.",
+      "expected_tools": [],
+      "category": "workspace",
+      "notes": "Direct file read request.",
+      "id": 117
+    },
+    {
+      "prompt": "Create a new file called project-plan.md in the workspace with the outline I just described.",
+      "expected_tools": [],
+      "category": "workspace",
+      "notes": "File creation task.",
+      "id": 118
+    },
+    {
+      "prompt": "In the config.yaml file, change the heartbeat interval from 30 to 15 minutes.",
+      "expected_tools": [],
+      "category": "workspace",
+      "notes": "Needs to read current file then make targeted edit.",
+      "id": 119
+    },
+    {
+      "prompt": "Check what's in the memory folder for today's date and yesterday's notes.",
+      "expected_tools": [],
+      "category": "workspace",
+      "notes": "Reading daily memory files.",
+      "id": 120
+    },
+    {
+      "prompt": "Update the AGENTS.md file to add a new rule about never deploying on Fridays.",
+      "expected_tools": [],
+      "category": "workspace",
+      "notes": "Read existing file, apply targeted edit.",
+      "id": 121
+    },
+    {
+      "prompt": "Run git status in the workspace repo and tell me if there are uncommitted changes.",
+      "expected_tools": [],
+      "category": "ops",
+      "notes": "Shell command execution.",
+      "id": 122
+    },
+    {
+      "prompt": "Start a long-running build process in the background and check on it in a few minutes.",
+      "expected_tools": [
+        "cron"
+      ],
+      "category": "ops",
+      "notes": "Background exec (core) + delayed check-in \u2192 cron is reasonable non-core selection.",
+      "id": 123
+    },
+    {
+      "prompt": "Kill that background process that's been running for an hour.",
+      "expected_tools": [],
+      "category": "ops",
+      "notes": "Process management action.",
+      "id": 124
+    },
+    {
+      "prompt": "Run the test suite and pipe the output to a log file, then show me the results.",
+      "expected_tools": [],
+      "category": "ops",
+      "notes": "Exec + read output file.",
+      "id": 125
+    },
+    {
+      "prompt": "Remember that I prefer Opus for all research tasks and Sonnet for quick answers.",
+      "expected_tools": [],
+      "category": "memory",
+      "notes": "Storing a preference.",
+      "id": 126
+    },
+    {
+      "prompt": "What do you know about my preferences for model selection?",
+      "expected_tools": [],
+      "category": "memory",
+      "notes": "Searching stored memories.",
+      "id": 127
+    },
+    {
+      "prompt": "Delete the memory about my old timezone \u2014 I moved from PST to EST.",
+      "expected_tools": [
+        "memory_delete"
+      ],
+      "category": "memory",
+      "notes": "memory_search+memory_add are core; memory_delete is the non-core action.",
+      "id": 128
+    },
+    {
+      "prompt": "List all the memories you have stored about my projects.",
+      "expected_tools": [
+        "memory_list"
+      ],
+      "category": "memory",
+      "notes": "Listing all stored memories.",
+      "id": 129
+    },
+    {
+      "prompt": "Update my stored preference about coding style \u2014 I now prefer TypeScript over JavaScript.",
+      "expected_tools": [
+        "memory_update"
+      ],
+      "category": "memory",
+      "notes": "memory_search is core; memory_update is the non-core action.",
+      "id": 130
+    },
+    {
+      "prompt": "Check if the memory about my API key configuration was stored correctly.",
+      "expected_tools": [
+        "memory_get",
+        "memory_list"
+      ],
+      "category": "memory",
+      "notes": "Verification needs memory_get/memory_list (non-core) beyond just search.",
+      "id": 131
+    },
+    {
+      "prompt": "Send a message to the research session telling it to prioritize the SEC filing analysis.",
+      "expected_tools": [
+        "sessions_send"
+      ],
+      "category": "ops",
+      "notes": "Cross-session messaging.",
+      "id": 132
+    },
+    {
+      "prompt": "What model am I currently using and how much have I spent this session?",
+      "expected_tools": [],
+      "category": "ops",
+      "notes": "Session status inquiry.",
+      "id": 133
+    },
+    {
+      "prompt": "List the available agents I can delegate work to.",
+      "expected_tools": [
+        "agents_list"
+      ],
+      "category": "ops",
+      "notes": "Agent discovery.",
+      "id": 134
+    },
+    {
+      "prompt": "Show me a live preview of the HTML I just wrote in the canvas.",
+      "expected_tools": [
+        "canvas"
+      ],
+      "category": "creative",
+      "notes": "Canvas presentation.",
+      "id": 135
+    },
+    {
+      "prompt": "Find that thing about the budget from last week.",
+      "expected_tools": [],
+      "category": "adversarial",
+      "notes": "Ambiguous \u2014 could be memory search, file read, or financial tool. Memory search is most likely for 'find that thing' pattern.",
+      "id": 136
+    },
+    {
+      "prompt": "Send it to the team.",
+      "expected_tools": [
+        "message"
+      ],
+      "category": "adversarial",
+      "notes": "Maximally ambiguous \u2014 'it' undefined. But 'send to team' implies messaging.",
+      "id": 137
+    },
+    {
+      "prompt": "Check on things.",
+      "expected_tools": [],
+      "category": "adversarial",
+      "notes": "Too vague for any specific tool. Should ask for clarification or use no tools.",
+      "id": 138
+    },
+    {
+      "prompt": "Search for recent AI papers about tool selection and save the best ones.",
+      "expected_tools": [
+        "web_search",
+        "web_fetch"
+      ],
+      "category": "adversarial",
+      "notes": "Research task: web_search+web_fetch for finding papers. memory_add (core) handles saving.",
+      "id": 139
+    },
+    {
+      "prompt": "What did I say about that yesterday?",
+      "expected_tools": [
+        "sessions_history"
+      ],
+      "category": "adversarial",
+      "notes": "Temporal self-reference. sessions_history or memory_search both valid; classifier picked sessions_history.",
+      "id": 140
+    },
+    {
+      "prompt": "Take a look at this and tell me what you think.",
+      "expected_tools": [],
+      "category": "adversarial",
+      "notes": "No actionable tool \u2014 needs clarification on what 'this' refers to.",
+      "id": 141
+    },
+    {
+      "prompt": "Can you research how much we spent last month and compare it to industry benchmarks?",
+      "expected_tools": [
+        "finance__get_transactions",
+        "web_search"
+      ],
+      "category": "adversarial",
+      "notes": "Cross-domain: financial data + web research. Tests whether classifier handles mixed domains.",
+      "id": 142
+    },
+    {
+      "prompt": "Make a note, set a reminder for tomorrow, and then tell me the weather.",
+      "expected_tools": [
+        "cron",
+        "web_search"
+      ],
+      "category": "adversarial",
+      "notes": "Triple-intent: memory_add (core) + cron (reminder) + web_search (weather).",
+      "id": 143
+    },
+    {
+      "prompt": "Is the server running?",
+      "expected_tools": [],
+      "category": "adversarial",
+      "notes": "exec is core. No non-core tools needed.",
+      "id": 144
+    },
+    {
+      "prompt": "Help me with the presentation.",
+      "expected_tools": [],
+      "category": "adversarial",
+      "notes": "Insufficient context \u2014 no specific tool needed without more detail.",
+      "id": 145
     }
   ],
-  "curated_at": "2026-04-17T21:08:46.567698"
+  "curated_at": "2026-04-18"
 }

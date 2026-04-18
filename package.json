@@ -1,7 +1,7 @@
 {
   "name": "openclaw-tool-resolver",
-  "version": "0.1.0",
-  "description": "Dynamic per-turn tool surface resolver for OpenClaw \u2014 LLM classification + keyword validation, 67% token reduction",
+  "version": "0.2.0",
+  "description": "Dynamic per-turn tool surface resolver for OpenClaw — LLM classification + keyword validation, 67% token reduction",
   "type": "module",
   "main": "index.js",
   "author": "Andrew Stroup",
@@ -27,13 +27,19 @@
     "cost-reduction",
     "gpt",
     "claude",
-    "prompt-engineering"
+    "prompt-engineering",
+    "function-calling",
+    "mcp"
   ],
   "files": [
     "index.js",
     "openclaw.plugin.json",
     "benchmark/"
   ],
+  "scripts": {
+    "benchmark": "cd benchmark && python3 replay-harness.py --file benchmark-v3.2-curated.json",
+    "benchmark:verbose": "cd benchmark && python3 replay-harness.py --file benchmark-v3.2-curated.json --verbose"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

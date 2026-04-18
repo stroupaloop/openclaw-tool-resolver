@@ -47,9 +47,9 @@ ALL_TOOLS = [
     "subagents", "session_status", "image", "code_execution",
     "memory_add", "memory_delete", "memory_event_list", "memory_event_status",
     "memory_get", "memory_list", "memory_search", "memory_update",
-    "monarch-money__get_accounts", "monarch-money__get_budgets",
-    "monarch-money__get_cashflow", "monarch-money__get_transaction_categories",
-    "monarch-money__get_transactions", "monarch-money__refresh_accounts",
+    "finance__get_accounts", "finance__get_budgets",
+    "finance__get_cashflow", "finance__get_transaction_categories",
+    "finance__get_transactions", "finance__refresh_accounts",
     "pdf", "sessions_spawn", "sessions_yield", "tts", "web_search",
     "web_fetch", "browser", "x_search"
 ]
@@ -87,12 +87,12 @@ TOOL_DESCRIPTIONS = {
     'memory_update': 'Update memory',
     'memory_event_list': 'List memory events',
     'memory_event_status': 'Memory event status',
-    'monarch-money__get_accounts': 'Get linked financial accounts (balances, institutions, account types)',
-    'monarch-money__get_budgets': 'Get budget information (limits, spending vs budget by category)',
-    'monarch-money__get_cashflow': 'Analyze cashflow data (income vs expenses over time)',
-    'monarch-money__get_transaction_categories': 'List all transaction categories. REQUIRED when filtering, grouping, or breaking down transactions by category, or when checking which categories exist/have activity',
-    'monarch-money__get_transactions': 'Fetch financial transactions (with optional filters by account, category, date range)',
-    'monarch-money__refresh_accounts': 'Refresh all financial account data from institutions',
+    'finance__get_accounts': 'Get linked financial accounts (balances, institutions, account types)',
+    'finance__get_budgets': 'Get budget information (limits, spending vs budget by category)',
+    'finance__get_cashflow': 'Analyze cashflow data (income vs expenses over time)',
+    'finance__get_transaction_categories': 'List all transaction categories. REQUIRED when filtering, grouping, or breaking down transactions by category, or when checking which categories exist/have activity',
+    'finance__get_transactions': 'Fetch financial transactions (with optional filters by account, category, date range)',
+    'finance__refresh_accounts': 'Refresh all financial account data from institutions',
 }
 
 SYSTEM_PROMPT = """You are a tool-routing classifier. Given a user prompt and the available tools, select ONLY the non-core tools needed for this turn.

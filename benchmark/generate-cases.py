@@ -18,9 +18,9 @@ BENCHMARK_FILE = Path.home() / ".openclaw/workspace/resolver-v2/tests/benchmark-
 # Categories and their expected tool combinations
 CATEGORIES = {
     "financial": {
-        "tools": ["monarch-money__get_accounts", "monarch-money__get_budgets", "monarch-money__get_cashflow",
-                   "monarch-money__get_transaction_categories", "monarch-money__get_transactions",
-                   "monarch-money__refresh_accounts", "code_execution"],
+        "tools": ["finance__get_accounts", "finance__get_budgets", "finance__get_cashflow",
+                   "finance__get_transaction_categories", "finance__get_transactions",
+                   "finance__refresh_accounts", "code_execution"],
         "count": 12,
     },
     "messaging": {
