@@ -87,32 +87,52 @@ The keyword cache acts as a safety net, catching tools the LLM classifier may ha
 
 The validation layer ensures **recall is prioritized over precision** — it's always better to include an unnecessary tool than to miss a needed one.
 
-## Multi-Model Benchmark (v3.2)
+## Multi-Model Benchmark (v2 — April 2026)
 
-145 curated test cases across 14 categories, 3 runs per model (April 18, 2026):
+> **Full methodology, limitations, and roadmap:** [BENCHMARK-METHODOLOGY.md](BENCHMARK-METHODOLOGY.md)
 
-| Model | Accuracy | Recall | Precision | p50 | p95 |
-|-------|----------|--------|-----------|-----|-----|
-| **gpt-5.4-mini** | **99.1%** | 94.8% | 81.2% | **856ms** | 1,240ms |
-| claude-sonnet-4-6 | 98.4% | 94.1% | 74.5% | 1,615ms | 3,081ms |
-| gpt-5.4 | 94.3% | 91.9% | 81.3% | 1,190ms | 1,904ms |
-| claude-haiku-4-5 | 92.6% | 89.3% | 76.1% | 1,070ms | 1,953ms |
-| grok-4.1-fast | 91.0% | 91.2% | 80.2% | 4,089ms | 8,961ms |
-| gemini-3-flash | 64.6% | 64.1% | 89.4% | 1,454ms | 2,068ms |
+145 curated test cases across 14 categories. Two configurations measured:
 
-### Analysis
+- **Deterministic** (T=0, n=1) — production-matched; what ships
+- **Voted** (T=0.3, n=5) — ensemble reference; shows the ceiling at 5× cost
 
-- **gpt-5.4-mini is the clear winner**: fastest, cheapest, highest accuracy. Confirms that tool classification is a structured routing task where smaller models outperform larger ones.
-- **Claude Sonnet is a strong second** but at 2x the latency and lower precision (more false positives).
-- **gpt-5.4 (full) underperforms mini**: larger model over-reasons on a classification task that benefits from decisiveness.
-- **Gemini struggles** with domain-specific tool names (finance, memory management, session tools). High precision but terrible recall — it consistently under-selects.
-- **Grok's latency is prohibitive** for a pre-filter use case: 4s p50, 9s p95.
+> **Metric note:** Previous versions (v3.2) reported `accuracy` or `must_include_accuracy`. As of v2, this metric is labeled **must-include recall** — the computation is identical; only the label changed to clarify what is measured.
 
-## Methodology
+### Deterministic Config (T=0, n=1) — Production-Matched
+
+| Model | Recall | CI₉₅ | Exact | F1 | Precision | p50/call | Errors |
+|-------|-------:|------|------:|----:|---------:|---------:|-------:|
+| **gpt-5.4-mini** | **97.9%** | [94.1–99.3] | **64.1%** | **0.85** | 82.2% | **716ms** | 0 |
+| claude-sonnet-4-6 | 99.3% | [96.2–99.9] | 47.6% | 0.79 | 74.0% | 1,604ms | 0 |
+| claude-haiku-4-5 | 95.9% | [91.3–98.1] | 53.1% | 0.80 | 77.8% | 959ms | 0 |
+| gpt-5.4 | 93.8% | [88.6–96.7] | 61.4% | 0.82 | 81.9% | 1,024ms | 0 |
+| grok-4.1-fast | 93.8% | [88.6–96.7] | 62.1% | 0.82 | 80.2% | 4,506ms | 0 |
+| gemini-3-flash | 61.4% | [53.3–68.9] | 46.9% | 0.56 | 91.2% | 1,610ms | 83 ❌ |
+
+95% Wilson confidence intervals on recall and exact-match rate; bootstrap CIs on latency. Gemini-3-flash produced 83 malformed JSON responses out of 145 — classified as task-fit failures (prompt format incompatibility), not capability failures.
+
+### Voted Config (T=0.3, n=5) — Ensemble Reference
+
+| Model | Recall | CI₉₅ | Exact | p50/call | Errors |
+|-------|-------:|------|------:|---------:|-------:|
+| gpt-5.4-mini | 99.3% | [96.2–99.9] | 66.2% | 710ms | 0 |
+| claude-sonnet-4-6 | 99.3% | [96.2–99.9] | 48.3% | 1,598ms | 0 |
+| claude-haiku-4-5 | 95.9% | [91.3–98.1] | 53.1% | 959ms | 0 |
+| gpt-5.4 | 93.8% | [88.6–96.7] | 61.4% | 1,056ms | 0 |
+| grok-4.1-fast | 91.0% | [85.3–94.7] | 66.2% | 4,160ms | 1 |
+| gemini-3-flash | 63.4% | [55.4–70.9] | 45.5% | 1,683ms | 75 ❌ |
+
+### Key Takeaway
+
+gpt-5.4-mini achieves **97.9% must-include recall** (95% CI: 94.1–99.3%) at **716ms p50** on a 145-case benchmark. Claude Sonnet 4-6 achieves statistically comparable recall (CIs overlap) at 2.2× the latency and ~10× the cost. For production tool-routing classification, gpt-5.4-mini is the configuration we ship.
+
+See [BENCHMARK-METHODOLOGY.md](BENCHMARK-METHODOLOGY.md) for full methodology and known limitations.
+
+## Production Telemetry Methodology
 
 - Token savings estimated at ~150 tokens per tool description (conservative; actual varies by tool)
 - Cost calculations use published API pricing for each model
 - Resolver overhead calculated at 800 input + 150 output tokens per gpt-5.4-mini call
 - Monthly projections assume consistent daily usage patterns
 - All production data from real telemetry (no synthetic benchmarks)
-- Benchmark accuracy measured as must-include recall: all required tools must be present in the classifier output
+- Production telemetry in this section was captured from a LiteLLM deployment; equivalent data can be collected from any proxy that logs prompt_tokens.

@@ -26,10 +26,28 @@ User prompt → lightweight classifier LLM (~1s, parallel)
             Primary model sees only relevant tools (67% fewer)
 ```
 
-1. **LLM always classifies** — A fast, cheap classifier model analyzes each prompt and selects which tools the primary model actually needs. Any OpenAI-compatible LLM works; we tested 6 models and recommend `gpt-5.4-mini` (see [Benchmark](#benchmark-accuracy-v32)).
+1. **LLM always classifies** — A fast, cheap classifier model analyzes each prompt and selects which tools the primary model actually needs. Any OpenAI-compatible LLM works; we tested 6 models and recommend `gpt-5.4-mini` (see [Benchmark Methodology & Roadmap](#benchmark-methodology--roadmap)).
 2. **Keyword cache validates** — A learned cache cross-checks the LLM's selection, merging any tools the classifier may have missed. The cache never narrows — it only adds.
 3. **Core tools always included** — `read`, `write`, `edit`, `exec`, `process`, `memory_search`, `memory_add`, `session_status` are always available regardless of classification.
 4. **Graceful fallback** — On LLM timeout or error, falls back to keyword-based classification. On low confidence, returns the full tool surface.
+
+## Benchmark Methodology & Roadmap
+
+> **Full details:** [BENCHMARK-METHODOLOGY.md](BENCHMARK-METHODOLOGY.md)
+
+145-case benchmark across 14 categories, validated against 6 LLMs. Two configurations: deterministic (T=0, n=1, production-matched) and voted (T=0.3, n=5, ensemble reference). Primary metric is **must-include recall** — all required tools must appear in the classifier output. gpt-5.4-mini leads on the deterministic config (97.9% recall, 716ms p50); Claude Sonnet 4-6 achieves comparable recall at 2.2× latency and ~10× cost.
+
+### Known Limitations (Short Form)
+
+| Limitation | Why It Matters |
+|------------|----------------|
+| n=145 is small | Wide CIs for small categories; pairwise comparisons underpowered |
+| Single-annotator ground truth | No inter-rater agreement; label quality unknown |
+| Test data co-evolved with classifier prompt | Likely leakage; reported recall overstates OOD performance |
+| No OOD coverage | Multilingual, typos, adversarial not tested |
+| No human baseline | No ceiling reference |
+
+See [BENCHMARK-METHODOLOGY.md](BENCHMARK-METHODOLOGY.md) for the full limitations table, failure analysis, and roadmap. Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Production Results
 
@@ -37,7 +55,7 @@ User prompt → lightweight classifier LLM (~1s, parallel)
 
 ### Measured Token Savings (Ground Truth)
 
-Verified via LiteLLM `prompt_tokens` — actual tokens sent to the provider API:
+Verified via LiteLLM `prompt_tokens` — actual tokens sent to the provider API. Production telemetry in this section was captured from a LiteLLM deployment; equivalent data can be collected from any proxy that logs prompt_tokens.
 
 | Metric | Before Resolver | After Resolver | Delta |
 |--------|---------------:|---------------:|------:|
@@ -73,20 +91,20 @@ Based on measured 4,048 tokens saved per turn:
 
 **Even on the cheapest model, the resolver pays for itself 38x over.**
 
-### Benchmark Accuracy (v3.2)
+### Benchmark (v2 — Deterministic Config)
 
-145 curated test cases across 14 categories, 3 runs per model:
+145 curated test cases, 14 categories. Primary metric: must-include recall (all required tools present). See [BENCHMARK-METHODOLOGY.md](BENCHMARK-METHODOLOGY.md) for full results including voted config, CIs, and failure analysis.
 
-| Model | Accuracy | Recall | Precision | p50 Latency |
-|-------|----------|--------|-----------|-------------|
-| **gpt-5.4-mini** | **99.1%** | 94.8% | 81.2% | **856ms** |
-| claude-sonnet-4-6 | 98.4% | 94.1% | 74.5% | 1,615ms |
-| gpt-5.4 | 94.3% | 91.9% | 81.3% | 1,190ms |
-| claude-haiku-4-5 | 92.6% | 89.3% | 76.1% | 1,070ms |
-| grok-4.1-fast | 91.0% | 91.2% | 80.2% | 4,089ms |
-| gemini-3-flash | 64.6% | 64.1% | 89.4% | 1,454ms |
+| Model | Recall | CI₉₅ | Exact | p50/call | Errors |
+|-------|-------:|------|------:|---------:|-------:|
+| **gpt-5.4-mini** | **97.9%** | [94.1–99.3] | 64.1% | **716ms** | 0 |
+| claude-sonnet-4-6 | 99.3% | [96.2–99.9] | 47.6% | 1,604ms | 0 |
+| claude-haiku-4-5 | 95.9% | [91.3–98.1] | 53.1% | 959ms | 0 |
+| gpt-5.4 | 93.8% | [88.6–96.7] | 61.4% | 1,024ms | 0 |
+| grok-4.1-fast | 93.8% | [88.6–96.7] | 62.1% | 4,506ms | 0 |
+| gemini-3-flash | 61.4% | [53.3–68.9] | 46.9% | 1,610ms | 83 ❌ |
 
-**Key finding:** The smallest, cheapest model outperforms all larger models on this task. Tool classification is a structured routing problem — over-reasoning hurts accuracy. Description quality, not model size, is the primary driver. The classifier model is configurable; we recommend `gpt-5.4-mini` based on these results.
+**Key finding:** gpt-5.4-mini achieves 97.9% must-include recall at 716ms p50. Claude Sonnet 4-6 achieves statistically comparable recall (CIs overlap) at 2.2× the latency and ~10× the cost. Tool classification is a structured routing problem — over-reasoning hurts. Description quality, not model size, is the primary driver. The classifier model is configurable; we recommend `gpt-5.4-mini` based on these results.
 
 ## Installation
 
@@ -149,9 +167,9 @@ This plugin requires the `before_prompt_build` hook to return `toolsAllow`, whic
 ### LLM API Access
 
 The resolver needs access to a fast, cheap LLM for classification. Any OpenAI-compatible endpoint works. We benchmarked 6 models and recommend:
-- **gpt-5.4-mini** — best accuracy (99.1%), fastest (856ms p50), cheapest
-- **claude-sonnet-4-6** — strong alternative (98.4%) if you're already routing through Anthropic
-- See [Benchmark](#benchmark-accuracy-v32) for the full comparison
+- **gpt-5.4-mini** — 97.9% must-include recall, fastest (716ms p50), cheapest
+- **claude-sonnet-4-6** — statistically comparable recall with overlapping CI, at 2.2× latency
+- See [Benchmark Methodology & Roadmap](#benchmark-methodology--roadmap) for the full comparison
 
 ## Architecture
 
@@ -238,9 +256,15 @@ When `telemetryFile` is configured, the resolver logs one JSONL entry per turn:
 
 `sessionId` and `agentId` are populated from the OpenClaw hook context when available (null otherwise). The classifier API call is tagged with `user: "openclaw-resolver"` and `x-openclaw-caller: tool-resolver` so LiteLLM proxies can filter resolver traffic by caller.
 
-## LiteLLM Tag Attribution
+## Attribution & Cost Filtering
 
-Every classifier request includes a `metadata.tags` field that LiteLLM natively preserves in `LiteLLM_SpendLogs`. This provides reliable cost attribution even when the `user` field is stripped by LiteLLM's internal routing.
+The resolver emits standard attribution metadata that any downstream LLM proxy or analytics layer can filter on:
+
+- **OpenAI `user` field** — set to `"openclaw-resolver"` on every classifier request
+- **HTTP header** — `x-openclaw-caller: tool-resolver` passed with every call
+- **`metadata.tags` array** — always includes `["openclaw-resolver", "resolver:classify"]` plus any user-configured tags
+
+LiteLLM is the tested reference implementation — its `LiteLLM_SpendLogs` schema exposes all three signals natively. Helicone, Portkey, LangSmith, or custom proxies should work similarly as they generally preserve pass-through fields.
 
 ### Default tags
 
@@ -272,7 +296,7 @@ Configured tags are **appended** to the defaults:
 ["openclaw-resolver", "resolver:classify", "my-agent", "production"]
 ```
 
-### Querying resolver spend in LiteLLM
+### Example (LiteLLM-specific SQL)
 
 Filter resolver calls from `LiteLLM_SpendLogs` using the tags JSONB column:
 
@@ -288,7 +312,9 @@ FROM "LiteLLM_SpendLogs"
 WHERE metadata->'tags' @> '["my-agent"]'::jsonb;
 ```
 
-Combined with `user: "openclaw-resolver"` and the `x-openclaw-caller: tool-resolver` header, this gives three independent attribution signals for belt-and-suspenders cost tracking.
+### Other proxies
+
+The same attribution pattern works with any proxy that passes through OpenAI-compatible fields. Helicone, Portkey, and LangSmith all preserve the `user` field and custom headers by default. If your proxy supports metadata or tags, configure it to filter on `openclaw-resolver` or `resolver:classify`. Adapt the query above for your proxy's logging schema.
 
 **Privacy**: Telemetry captures prompt excerpts by default for debugging. Set `capturePrompts: false` to disable. No telemetry is sent externally — all data stays local.
 
