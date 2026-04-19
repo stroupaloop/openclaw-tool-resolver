@@ -19,7 +19,7 @@
 ## Publishing
 
 ```bash
-cd /path/to/openclaw-tool-resolver
+cd /path/to/openclaw-resolver
 
 # Dry run first — see what would be published
 npm pack --dry-run

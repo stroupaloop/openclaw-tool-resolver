@@ -1,6 +1,6 @@
 {
-  "name": "openclaw-tool-resolver",
-  "version": "0.3.1",
+  "name": "openclaw-resolver",
+  "version": "0.3.2",
   "description": "Dynamic per-turn tool surface resolver for OpenClaw — LLM classification + keyword validation, 67% token reduction",
   "type": "module",
   "main": "index.js",
@@ -8,11 +8,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stroupaloop/openclaw-tool-resolver.git"
+    "url": "git+https://github.com/stroupaloop/openclaw-resolver.git"
   },
-  "homepage": "https://github.com/stroupaloop/openclaw-tool-resolver#readme",
+  "homepage": "https://github.com/stroupaloop/openclaw-resolver#readme",
   "bugs": {
-    "url": "https://github.com/stroupaloop/openclaw-tool-resolver/issues"
+    "url": "https://github.com/stroupaloop/openclaw-resolver/issues"
   },
   "keywords": [
     "openclaw",

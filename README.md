@@ -1,4 +1,8 @@
-# openclaw-tool-resolver
+# openclaw-resolver
+
+> Dynamic per-turn tool surface resolver for OpenClaw
+
+> **Note on naming:** The npm package and GitHub repo are `openclaw-resolver`. The internal OpenClaw plugin ID is still `openclaw-tool-resolver` for backward-compat with existing installs — you'll see it in `openclaw.json` configs and extension paths.
 
 Dynamic per-turn tool surface resolver for [OpenClaw](https://github.com/openclaw/openclaw). Intelligently narrows the tool list before each LLM call — reducing context pollution, improving tool selection accuracy, and cutting prompt tokens.
 
@@ -90,14 +94,14 @@ Based on measured 4,048 tokens saved per turn:
 
 ```bash
 # Clone into OpenClaw extensions directory
-git clone https://github.com/stroupaloop/openclaw-tool-resolver.git \
+git clone https://github.com/stroupaloop/openclaw-resolver.git \
   ~/.openclaw/extensions/openclaw-tool-resolver
 ```
 
 ### Via npm
 
 ```bash
-npm install openclaw-tool-resolver
+npm install openclaw-resolver
 ```
 
 Then symlink or copy to `~/.openclaw/extensions/openclaw-tool-resolver/`.

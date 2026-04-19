@@ -1,4 +1,4 @@
-# Contributing to openclaw-tool-resolver
+# Contributing to openclaw-resolver
 
 Contributions that improve accuracy, reduce latency, expand benchmark coverage, or improve tool descriptions are welcome.
 
@@ -12,13 +12,13 @@ Contributions that improve accuracy, reduce latency, expand benchmark coverage, 
 
 ```bash
 # Clone
-git clone https://github.com/YOUR_USERNAME/openclaw-tool-resolver.git
+git clone https://github.com/YOUR_USERNAME/openclaw-resolver.git
 
 # Link into OpenClaw extensions
-ln -s $(pwd)/openclaw-tool-resolver ~/.openclaw/extensions/openclaw-tool-resolver
+ln -s $(pwd)/openclaw-resolver ~/.openclaw/extensions/openclaw-tool-resolver
 
 # Run benchmarks
-cd openclaw-tool-resolver/benchmark
+cd openclaw-resolver/benchmark
 LLM_MODEL=gpt-5.4-mini python3 replay-harness.py --file benchmark-v3.2-curated.json --verbose
 ```
 
