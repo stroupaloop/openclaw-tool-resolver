@@ -119,7 +119,7 @@ Add to your `~/.openclaw/openclaw.json`:
 
 ### OpenClaw Hook Support
 
-This plugin requires the `before_prompt_build` hook to return `toolsAllow`, which narrows the tool surface before prompt assembly. This capability is proposed in [openclaw/openclaw#68608](https://github.com/openclaw/openclaw/pull/68608).
+This plugin requires the `before_prompt_build` hook to return `toolsAllow`, which narrows the tool surface before prompt assembly. This capability is proposed in [openclaw/openclaw#68734](https://github.com/openclaw/openclaw/pull/68734).
 
 **Until the PR is merged**, you can apply a surgical patch to your local OpenClaw installation. See [PATCHING.md](PATCHING.md) for instructions.
 
