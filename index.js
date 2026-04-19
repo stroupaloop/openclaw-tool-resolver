@@ -75,6 +75,30 @@ const TOOL_DESCRIPTIONS = {
   'finance__refresh_accounts': 'Refresh all financial account data',
 };
 
+// ── Skill Descriptions (for LLM context) ──────────────────────────────────
+
+const SKILL_DESCRIPTIONS = {
+  '1password': '1Password CLI: secrets, vaults, desktop integration',
+  'coding-agent': 'Delegate coding tasks to Codex/Claude Code/Pi agents',
+  'gh-issues': 'Fetch GitHub issues, spawn agents to fix and open PRs',
+  'github': 'GitHub operations: issues, PRs, CI, code review via gh CLI',
+  'healthcheck': 'Host security hardening, firewall/SSH audit, OpenClaw deployment checks',
+  'himalaya': 'CLI email: list, read, write, reply, search via IMAP/SMTP',
+  'node-connect': 'Diagnose OpenClaw node connection and pairing failures',
+  'openai-whisper-api': 'Transcribe audio via OpenAI Whisper API',
+  'skill-creator': 'Create, edit, improve, or audit AgentSkills and SKILL.md files',
+  'slack': 'Slack operations: reactions, pins, channel actions',
+  'tmux': 'Remote-control tmux sessions: send keystrokes, scrape pane output',
+  'video-frames': 'Extract frames or clips from videos using ffmpeg',
+  'weather': 'Current weather and forecasts via wttr.in or Open-Meteo',
+  'ender-gdrive-research-upload': 'Upload research briefs to Google Drive as Google Docs with audio',
+  'ender-ralph-loop': 'Continuous improvement: decisions, retros, playbooks',
+  'ender-tbpn-voice': 'Write and generate TBPN-style voice briefings with ElevenLabs TTS',
+  'ender-telegram-delivery': 'Deliver messages and audio to AMS GV Telegram supergroup topics',
+  'gmail-oauth': 'Gmail OAuth2 token lifecycle: refresh, validate, escalate',
+  'research-qa': 'Pre-delivery QA checklist for research output',
+};
+
 // ── Metadata Stripping ─────────────────────────────────────────────────────
 
 function stripMetadata(prompt) {
@@ -96,33 +120,37 @@ function stripMetadata(prompt) {
 
 // ── Dynamic LLM Classifier ────────────────────────────────────────────────
 
-function buildClassificationPrompt(availableTools) {
+function buildClassificationPrompt(availableTools, availableSkills) {
   const toolLines = availableTools
     .filter(t => !CORE_TOOLS.has(t))
     .map(t => `- ${t}: ${TOOL_DESCRIPTIONS[t] || 'specialized tool'}`)
     .join('\n');
 
-  return `You are a tool-routing classifier. Given a user prompt and the available tools, select ONLY the non-core tools needed for this turn.
+  const skillSection = availableSkills && availableSkills.length > 0
+    ? `\n\nAvailable skills (prompt instructions, not callable tools):\n${availableSkills.map(s => `- ${s}: ${SKILL_DESCRIPTIONS[s] || 'specialized skill'}`).join('\n')}\n\nSkill rules:\n1. Return ONLY skills whose SKILL.md the assistant would need to read for this prompt\n2. If no skills are relevant, return an empty array\n3. Research/writing tasks typically need: research-qa, ender-gdrive-research-upload, ender-tbpn-voice\n4. GitHub/coding tasks typically need: github, coding-agent, gh-issues\n5. Email tasks need: himalaya, gmail-oauth`
+    : '';
+
+  return `You are a tool-and-skill routing classifier. Given a user prompt, select ONLY the non-core tools and skills needed for this turn.
 
 Core tools (ALWAYS included, do NOT list these): ${[...CORE_TOOLS].join(', ')}
 
 Available non-core tools:
-${toolLines}
+${toolLines}${skillSection}
 
 Rules:
 1. Return ONLY the non-core tool names the assistant would actually CALL for this prompt
-2. If no non-core tools are needed, return an empty array
+2. If no non-core tools are needed, return an empty tools array
 3. Include tools for the complete task (e.g., research needs web_search + web_fetch)
 4. When uncertain or the task spans many domains, include all relevant tools
-5. Short/ambiguous prompts (<20 chars) → return all non-core tools
+5. Short/ambiguous prompts (<20 chars) → return all non-core tools and all skills
 
-Respond with ONLY valid JSON: {"tools":["tool_name",...],"confidence":<0.0-1.0>,"reasoning":"<10 words max>"}`;
+Respond with ONLY valid JSON: {"tools":["tool_name",...],${availableSkills?.length ? '"skills":["skill_name",...],' : ''}"confidence":<0.0-1.0>,"reasoning":"<10 words max>"}`;
 }
 
-async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey) {
+async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey, availableSkills) {
   const t0 = Date.now();
   try {
-    const systemPrompt = buildClassificationPrompt(availableTools);
+    const systemPrompt = buildClassificationPrompt(availableTools, availableSkills);
     const body = JSON.stringify({
       model,
       messages: [
@@ -131,6 +159,7 @@ async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey
       ],
       max_tokens: 200,
       temperature: 0,
+      user: 'openclaw-resolver',
     });
 
     const resp = await fetch(`${apiBase}/v1/chat/completions`, {
@@ -138,6 +167,7 @@ async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
+        'x-openclaw-caller': 'tool-resolver',
       },
       body,
       signal: AbortSignal.timeout(5000),
@@ -158,9 +188,12 @@ async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey
     const parsed = JSON.parse(content);
     const tools = Array.isArray(parsed.tools) ? parsed.tools : [];
     const validTools = tools.filter(t => availableTools.includes(t));
+    const skills = Array.isArray(parsed.skills) ? parsed.skills : [];
+    const validSkills = availableSkills ? skills.filter(s => availableSkills.includes(s)) : [];
 
     return {
       tools: validTools,
+      skills: validSkills,
       confidence: parsed.confidence || 0,
       reasoning: parsed.reasoning || '',
       latencyMs,
@@ -378,6 +411,12 @@ export default definePluginEntry({
     api.on('before_prompt_build', async (event, hookCtx) => {
       const rawPrompt = event.prompt;
       const availableTools = event.availableTools;
+      const availableSkills = event.availableSkills;
+      const sessionId = hookCtx?.sessionId ?? null;
+      const agentId = hookCtx?.agentId ?? null;
+
+      // Debug: log skill availability
+      api.logger.info?.(`[tool-resolver] event keys: ${Object.keys(event).join(',')} | availableSkills: ${availableSkills ? availableSkills.length + ' skills' : 'undefined'}`);
 
       // Skip if no prompt or no available tools (early/pre-assembly call)
       if (!rawPrompt || typeof rawPrompt !== 'string' || rawPrompt.length < 10) return undefined;
@@ -406,7 +445,7 @@ export default definePluginEntry({
       }
 
       try {
-        const llmResult = await classifyLLMDynamic(prompt, nonCoreTools, llmModel, llmApiBase, llmApiKey);
+        const llmResult = await classifyLLMDynamic(prompt, nonCoreTools, llmModel, llmApiBase, llmApiKey, availableSkills);
         counters.llmCalls++;
 
         if (llmResult.error) {
@@ -421,6 +460,8 @@ export default definePluginEntry({
           logTelemetry(telemetryFile, {
             turn: counters.total, toolsAllow, source: 'keyword-fallback',
             llmError: llmResult.error, availableTools,
+            sessionId,
+            agentId,
             promptExcerpt: capturePrompts ? prompt.slice(0, promptExcerptLength) : undefined,
           });
           return { toolsAllow };
@@ -482,12 +523,36 @@ export default definePluginEntry({
           validationAction,
           llmMissing: validation.llmMissing || [],
           availableTools,
+          availableSkills,
+          skillsAllow: llmResult.skills,
           tokensSaved: savings,
+          sessionId,
+          agentId,
           promptExcerpt: capturePrompts ? prompt.slice(0, promptExcerptLength) : undefined,
         });
 
-        if (toolsAllow.length >= availableTools.length) return undefined;
-        return { toolsAllow };
+        // Build skillsAllow from LLM classification.
+        // When availableSkills exist and LLM classified (even to empty), narrow skills.
+        // Empty array means "no skills needed" — filters out all skill descriptions.
+        const skillsAllow = (availableSkills && availableSkills.length > 0 && llmResult.skills)
+          ? llmResult.skills
+          : undefined;
+
+        if (skillsAllow && logDecisions) {
+          api.logger.info?.(
+            `[tool-resolver] turn=${counters.total} → skills [${skillsAllow.join(',')}] ` +
+            `(${skillsAllow.length}/${availableSkills?.length || 0} skills)`
+          );
+        }
+
+        const noToolNarrowing = toolsAllow.length >= availableTools.length;
+        const noSkillNarrowing = !skillsAllow;
+        if (noToolNarrowing && noSkillNarrowing) return undefined;
+
+        const result = {};
+        if (!noToolNarrowing) result.toolsAllow = toolsAllow;
+        if (skillsAllow) result.skillsAllow = skillsAllow;
+        return result;
 
       } catch (err) {
         counters.llmErrors++;

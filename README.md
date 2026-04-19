@@ -226,9 +226,13 @@ When `telemetryFile` is configured, the resolver logs one JSONL entry per turn:
   "validation": "agree",
   "availableTools": ["read", "write", "exec", "...42 tools..."],
   "tokensSaved": 3600,
+  "sessionId": "sid_abc123",
+  "agentId": "main",
   "ts": "2026-04-18T15:04:50.690Z"
 }
 ```
+
+`sessionId` and `agentId` are populated from the OpenClaw hook context when available (null otherwise). The classifier API call is tagged with `user: "openclaw-resolver"` and `x-openclaw-caller: tool-resolver` so LiteLLM proxies can filter resolver traffic by caller.
 
 **Privacy**: Telemetry captures prompt excerpts by default for debugging. Set `capturePrompts: false` to disable. No telemetry is sent externally — all data stays local.
 
