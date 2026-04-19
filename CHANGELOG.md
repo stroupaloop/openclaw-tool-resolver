@@ -4,6 +4,37 @@ All notable changes to `openclaw-resolver` (formerly `openclaw-tool-resolver`).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] — 2026-04-19
+
+### Added — Data/code split; file-based override catalog; JSON proposal schema
+
+Major architectural refactor. **Descriptions are now data, not code.**
+
+- **`default-catalog.json`** — ships with the package, contains the 42 tool + 14 skill descriptions previously hardcoded in `index.js`. Schema: [`schemas/catalog.v1.json`](schemas/catalog.v1.json). Community contributions to improve defaults land as PRs against this file, no code review burden.
+- **`catalogOverridesFile`** new plugin config field (default: `~/.openclaw/resolver-catalog.json`) — plugin reads this at boot and merges on top of defaults. Same schema as `default-catalog.json`.
+- **`schemas/proposal.v1.json`** — new machine-readable proposal format that tuning crons emit for review surfaces (e.g., Mission Control). Proposals are evidence-backed, validated against failure sets, and never auto-applied.
+
+Three-layer merge (last wins per-key):
+1. Defaults (`default-catalog.json`)
+2. Inline config overrides (v0.5.0 back-compat): `toolDescriptionOverrides` / `skillDescriptionOverrides`
+3. File overrides (`catalogOverridesFile`) — the recommended path
+
+### Why minor version (0.5.0 → 0.6.0)
+
+- New public config surface (`catalogOverridesFile`)
+- New shipped data file (`default-catalog.json`) — callers that relied on `TOOL_DESCRIPTIONS` / `SKILL_DESCRIPTIONS` as JS imports still work via a Proxy back-compat shim, but the canonical storage moved to JSON
+- New published schemas directory
+
+### Backward compatibility
+
+- v0.5.0 inline overrides (`toolDescriptionOverrides`, `skillDescriptionOverrides`) still work unchanged. Deprecated in favor of `catalogOverridesFile` but not removed.
+- Anyone importing `TOOL_DESCRIPTIONS` or `SKILL_DESCRIPTIONS` from the module still gets working lookups (Proxy over the loaded catalog).
+- No install action required for existing deployments: plugin transparently loads `default-catalog.json` from the package directory.
+
+### Rationale
+
+v0.5.0 baked descriptions into `index.js`, meaning every daily-tuning-loop improvement required a PR, version bump, and npm publish. That throttled the continuous-improvement premise of the project. v0.6.0 splits code from data — the classifier logic stays stable and versioned while the catalog becomes mutable runtime data. Mission Control (or any orchestrator) can now tune descriptions on approved proposals without ever touching the plugin source.
+
 ## [0.5.0] — 2026-04-19
 
 ### Added — Description Overrides (host-level customization)

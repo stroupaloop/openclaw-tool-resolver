@@ -28,76 +28,67 @@ const CORE_TOOLS = new Set([
   'memory_search', 'memory_add', 'session_status',
 ]);
 
-// ── Tool Descriptions (for LLM context) ────────────────────────────────────
-
-const TOOL_DESCRIPTIONS = {
-  read: 'Read file contents',
-  write: 'Create/overwrite files',
-  edit: 'Precise file edits',
-  exec: 'Shell commands',
-  process: 'Manage background processes',
-  web_search: 'Web search via Brave API — find current information, research topics, lookup articles, news, competitors, benchmarks',
-  web_fetch: 'Fetch/extract content from URLs — pull docs, articles, pricing pages, status pages, postmortems, SEC filings, any page whose URL is known or implied',
-  x_search: 'Search X/Twitter posts, trends, reactions, sentiment',
-  browser: 'Browser automation: navigate, click, login, fill forms, screenshot — use when you need to interact with a live webpage, NOT for reading uploaded screenshots (use image)',
-  canvas: 'Present data visualizations and interactive canvases',
-  nodes: 'Control paired IoT/smart-home devices and physical hardware: speakers, lights, blinds, routers, cameras, phones, displays, notifications, screen recording, location. Use for any "turn on/off", "mute", "reboot", "play", "dim", "open/close", "adjust" on physical devices',
-  cron: 'Schedule cron jobs, reminders, recurring tasks, wake events — use for ANY recurring/repeating/"every day/week/hour" or "remind me in/at" request, and for booking buffers/slots on a repeating schedule',
-  message: 'Send messages, texts, emails, notifications, polls, reactions to Telegram/Slack/Discord/SMS. Use for ANY "tell X", "text X", "notify X", "let X know", "send X a note", "draft a message to X", "apology to X", "thank-you to X", "confirm with X" — anywhere a human recipient needs to be informed',
-  gateway: 'OpenClaw gateway: restart, update config, change models, apply settings. Also for cross-channel delivery (e.g., send to both Slack AND email)',
-  agents_list: 'List available agent IDs for spawning',
-  sessions_list: 'List active sessions and sub-agents, check agent status',
-  sessions_history: 'Fetch message history from another session — use for "what did I say about X yesterday", "pull up the earlier thread"',
-  sessions_send: 'Send a message into another session/sub-agent',
-  sessions_spawn: 'Spawn coding agents (Codex, Claude Code, Pi), sub-agents, parallel research agents, or ACP sessions. Use for "spin up X", "launch parallel agents", "kick off agents to", "delegate to"',
-  sessions_yield: 'End current turn to receive sub-agent results — use after sessions_spawn when awaiting parallel output',
-  subagents: 'Coordinate running sub-agents: list, steer, kill. Pair with sessions_spawn when you need to monitor/manage/cancel spawned agents',
-  session_status: 'Session status: model, usage, cost, configuration',
-  image: 'Analyze/describe images with vision model — use for screenshots, photos, diagrams ALREADY uploaded (not live webpages)',
-  image_generate: 'Generate new images from text prompts',
-  video_generate: 'Generate videos from prompts or reference images',
-  tts: 'Text-to-speech: convert text to spoken audio/voice briefings, voiceovers, narration',
-  code_execution: 'Run sandboxed Python for calculations, data analysis, tabulation, forecasting, dedup, anomaly detection, categorization, CSV/JSON analysis, pattern matching — use whenever the task implies comparing, aggregating, filtering, or programmatically analyzing data (even financial)',
-  pdf: 'Analyze PDF documents, extract text/tables/data',
-  memory_search: 'Fuzzy/semantic search across memories — default for "find memories about X", "what do I remember about Y"',
-  memory_add: 'Store a NEW memory — use for "remember that X", "save this as a memory", "note that Y" (first-time storage)',
-  memory_delete: 'Delete a memory by ID',
-  memory_get: 'Retrieve a SPECIFIC memory by ID or verify it was stored — use for "check if my preference about X was saved", "pull up memory ID N"',
-  memory_list: 'List all memories (browse/inventory) — use for "show me what you remember", "list my stored preferences", "what memories exist about X"',
-  memory_update: 'Modify an EXISTING stored memory (not create new) — use for "update my preference from X to Y", "change my stored X", "revise the note about Y". Distinguish from memory_add (new) by the presence of an update/change verb',
-  memory_event_list: 'List memory audit events',
-  memory_event_status: 'Memory event status',
-  'finance__get_accounts': 'Get linked financial accounts, balances, institutions — use for "cash position", "account balances", "which accounts", overdrafts, negative balances',
-  'finance__get_budgets': 'Get budgets and category limits — use for "am I over budget", "budget status", "category limits"',
-  'finance__get_cashflow': 'Cashflow analysis (income vs expenses over time) — use for "cash position" trend, cashflow forecast, burn rate, net income over a period',
-  'finance__get_transaction_categories': 'List transaction categories — REQUIRED when filtering/grouping transactions by category, or when checking which categories exist',
-  'finance__get_transactions': 'Fetch transactions with optional filters (account/category/date/amount) — use for "show transactions", "find duplicates", "transactions over $X", "uncategorized transactions"',
-  'finance__refresh_accounts': 'Refresh/sync account data from institutions — use for "refresh my accounts", "update balances", "pull latest data"',
-};
-
-// ── Skill Descriptions (example catalog) ──────────────────────────────────
+// ── Catalog Loading (tool + skill descriptions) ─────────────────────────────
 //
-// This is an example skill catalog for the classifier's system prompt.
-// Callers should override via plugin config (config.skillDescriptions) to
-// match their actual skill set. Names must match skill IDs available in
-// the caller's OpenClaw installation.
+// Descriptions are loaded from default-catalog.json (shipped with package) and
+// optionally merged with an operator-writable override file at plugin boot.
+// Splits code from data: description tuning no longer requires code edits.
+// See README "Description Overrides" for the full catalog schema + override flow.
 
-const SKILL_DESCRIPTIONS = {
-  '1password': '1Password CLI: secrets, vaults, desktop integration',
-  'coding-agent': 'Delegate coding tasks to external coding agents (Codex, Claude Code, etc.)',
-  'gh-issues': 'Fetch GitHub issues, spawn agents to fix and open PRs',
-  'github': 'GitHub operations: issues, PRs, CI, code review via gh CLI',
-  'healthcheck': 'Host security hardening, firewall/SSH audit, deployment checks',
-  'himalaya': 'CLI email: list, read, write, reply, search via IMAP/SMTP',
-  'openai-whisper-api': 'Transcribe audio via OpenAI Whisper API',
-  'skill-creator': 'Create, edit, improve, or audit skills and SKILL.md files',
-  'slack': 'Slack operations: reactions, pins, channel actions',
-  'tmux': 'Remote-control tmux sessions: send keystrokes, scrape pane output',
-  'video-frames': 'Extract frames or clips from videos using ffmpeg',
-  'weather': 'Current weather and forecasts via wttr.in or Open-Meteo',
-  'research-qa': 'Pre-delivery QA checklist for research output',
-  'gmail-oauth': 'Gmail OAuth2 token lifecycle: refresh, validate, escalate',
-};
+import { readFileSync, existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+let _defaultCatalog = null;
+function loadDefaultCatalog() {
+  if (_defaultCatalog) return _defaultCatalog;
+  const candidates = [
+    join(__dirname, 'default-catalog.json'),
+    join(process.cwd(), 'default-catalog.json'),
+  ];
+  for (const p of candidates) {
+    if (existsSync(p)) {
+      try {
+        const raw = JSON.parse(readFileSync(p, 'utf8'));
+        _defaultCatalog = {
+          tools: (raw && typeof raw.tools === 'object') ? raw.tools : {},
+          skills: (raw && typeof raw.skills === 'object') ? raw.skills : {},
+        };
+        return _defaultCatalog;
+      } catch (_err) { /* fall through */ }
+    }
+  }
+  _defaultCatalog = { tools: {}, skills: {} };
+  return _defaultCatalog;
+}
+
+function loadOverrideCatalog(pathHint) {
+  if (!pathHint || typeof pathHint !== 'string') return { tools: {}, skills: {} };
+  // Expand ~ and resolve to absolute path
+  const expanded = pathHint.startsWith('~')
+    ? pathHint.replace(/^~/, process.env.HOME || '')
+    : pathHint;
+  const absolute = resolve(expanded);
+  if (!existsSync(absolute)) return { tools: {}, skills: {} };
+  try {
+    const raw = JSON.parse(readFileSync(absolute, 'utf8'));
+    return {
+      tools: (raw && typeof raw.tools === 'object') ? raw.tools : {},
+      skills: (raw && typeof raw.skills === 'object') ? raw.skills : {},
+    };
+  } catch (_err) {
+    return { tools: {}, skills: {} };
+  }
+}
+
+// Legacy accessor for backward-compat with any external code still reading these names
+const TOOL_DESCRIPTIONS = new Proxy({}, { get: (_, k) => loadDefaultCatalog().tools[k] });
+const SKILL_DESCRIPTIONS = new Proxy({}, { get: (_, k) => loadDefaultCatalog().skills[k] });
+
+
 
 // ── Metadata Stripping ─────────────────────────────────────────────────────
 
@@ -121,12 +112,13 @@ function stripMetadata(prompt) {
 // ── Dynamic LLM Classifier ────────────────────────────────────────────────
 
 function buildClassificationPrompt(availableTools, availableSkills, toolOverrides, skillOverrides) {
-  // Merge defaults with caller-provided overrides. Overrides take precedence per-key;
-  // any key NOT in the overrides falls back to the baked-in default. This is how
-  // Mission Control or any host-level config customizes the classifier's view of the
-  // tool/skill catalog without forking the plugin. See README "Description Overrides".
-  const toolDesc = { ...TOOL_DESCRIPTIONS, ...(toolOverrides || {}) };
-  const skillDesc = { ...SKILL_DESCRIPTIONS, ...(skillOverrides || {}) };
+  // Merge precedence (last wins): default catalog <- inline config overrides <- file overrides.
+  // File overrides are passed in via toolOverrides/skillOverrides arg (resolved at boot from catalogOverridesFile).
+  // Inline overrides (v0.5.0 back-compat) are already merged into those args by the caller.
+  // See README "Description Overrides" for the full catalog schema + merge flow.
+  const defaults = loadDefaultCatalog();
+  const toolDesc = { ...defaults.tools, ...(toolOverrides || {}) };
+  const skillDesc = { ...defaults.skills, ...(skillOverrides || {}) };
 
   const toolLines = availableTools
     .filter(t => !CORE_TOOLS.has(t))
@@ -421,14 +413,30 @@ export default definePluginEntry({
     const promptExcerptLength = config.promptExcerptLength || 1500;
     const extraTags = Array.isArray(config.telemetry?.tags) ? config.telemetry.tags : [];
 
-    // Description overrides (per-host or per-deployment customization).
-    // Shape: { toolName: 'override description', ... } — same key set as TOOL_DESCRIPTIONS / SKILL_DESCRIPTIONS.
-    // Mission Control or any orchestrator can write these into openclaw.json to tune
-    // classifier behavior without modifying the plugin source. See README "Description Overrides".
-    const toolOverrides = (config.toolDescriptionOverrides && typeof config.toolDescriptionOverrides === 'object') ? config.toolDescriptionOverrides : {};
-    const skillOverrides = (config.skillDescriptionOverrides && typeof config.skillDescriptionOverrides === 'object') ? config.skillDescriptionOverrides : {};
+    // Description overrides — three merge layers (last wins):
+    //   1. Defaults from default-catalog.json (shipped with package)
+    //   2. Inline config overrides (v0.5.0 back-compat): config.toolDescriptionOverrides + config.skillDescriptionOverrides
+    //   3. External override file: config.catalogOverridesFile (default ~/.openclaw/resolver-catalog.json)
+    // Mission Control or any orchestrator writes to the override file; operator-edits may use inline config.
+    // See README "Description Overrides" for full flow.
+    const inlineToolOverrides = (config.toolDescriptionOverrides && typeof config.toolDescriptionOverrides === 'object') ? config.toolDescriptionOverrides : {};
+    const inlineSkillOverrides = (config.skillDescriptionOverrides && typeof config.skillDescriptionOverrides === 'object') ? config.skillDescriptionOverrides : {};
+
+    const catalogOverridesPath = config.catalogOverridesFile || `${process.env.HOME || ''}/.openclaw/resolver-catalog.json`;
+    const fileOverrides = loadOverrideCatalog(catalogOverridesPath);
+
+    // Merge order: inline config ← file overrides (file wins per-key)
+    const toolOverrides = { ...inlineToolOverrides, ...fileOverrides.tools };
+    const skillOverrides = { ...inlineSkillOverrides, ...fileOverrides.skills };
+
     if (Object.keys(toolOverrides).length > 0 || Object.keys(skillOverrides).length > 0) {
-      api.logger.info?.(`[tool-resolver] description overrides active: ${Object.keys(toolOverrides).length} tool(s), ${Object.keys(skillOverrides).length} skill(s)`);
+      const inlineCount = Object.keys(inlineToolOverrides).length + Object.keys(inlineSkillOverrides).length;
+      const fileCount = Object.keys(fileOverrides.tools).length + Object.keys(fileOverrides.skills).length;
+      api.logger.info?.(
+        `[tool-resolver] description overrides active: ` +
+        `${Object.keys(toolOverrides).length} tool(s), ${Object.keys(skillOverrides).length} skill(s) ` +
+        `(inline: ${inlineCount}, file: ${fileCount} from ${fileCount > 0 ? catalogOverridesPath : 'n/a'})`
+      );
     }
 
     if (!enabled) {

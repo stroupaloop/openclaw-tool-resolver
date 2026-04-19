@@ -24,16 +24,21 @@
         "default": {},
         "description": "Named tool profiles: { profileName: { tools: [...], keywords: [...] } }"
       },
+      "catalogOverridesFile": {
+        "type": "string",
+        "default": "~/.openclaw/resolver-catalog.json",
+        "description": "Path to an override catalog JSON file (schema: schemas/catalog.v1.json). Merged on top of the shipped default-catalog.json at boot. Missing file is treated as empty overrides."
+      },
       "toolDescriptionOverrides": {
         "type": "object",
         "default": {},
-        "description": "Override the classifier's description for specific tools. Keys are tool IDs (e.g. 'nodes', 'message'); values are replacement strings. Merged on top of built-in defaults at boot.",
+        "description": "Inline override map for specific tools (legacy, v0.5.0). Prefer catalogOverridesFile for new deployments. Keys are tool IDs; values are replacement strings. Merged after defaults and before file overrides.",
         "additionalProperties": { "type": "string" }
       },
       "skillDescriptionOverrides": {
         "type": "object",
         "default": {},
-        "description": "Override the classifier's description for specific skills. Keys are skill IDs (e.g. 'github', 'research-qa'); values are replacement strings. Merged on top of built-in defaults at boot.",
+        "description": "Inline override map for specific skills (legacy, v0.5.0). Prefer catalogOverridesFile for new deployments. Keys are skill IDs; values are replacement strings. Merged after defaults and before file overrides.",
         "additionalProperties": { "type": "string" }
       },
       "telemetry": {
@@ -55,7 +60,8 @@
     "enabled": { "label": "Enable Resolver" },
     "logDecisions": { "label": "Log Decisions" },
     "telemetryFile": { "label": "Telemetry File", "placeholder": "~/.openclaw/workspace/resolver-telemetry.jsonl" },
-    "toolDescriptionOverrides": { "label": "Tool Description Overrides", "placeholder": "{ \"nodes\": \"...\" }" },
-    "skillDescriptionOverrides": { "label": "Skill Description Overrides", "placeholder": "{ \"github\": \"...\" }" }
+    "catalogOverridesFile": { "label": "Catalog Overrides File", "placeholder": "~/.openclaw/resolver-catalog.json" },
+    "toolDescriptionOverrides": { "label": "Tool Overrides (inline, legacy)", "placeholder": "{ \"nodes\": \"...\" }" },
+    "skillDescriptionOverrides": { "label": "Skill Overrides (inline, legacy)", "placeholder": "{ \"github\": \"...\" }" }
   }
 }

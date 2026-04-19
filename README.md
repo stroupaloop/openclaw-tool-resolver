@@ -234,28 +234,51 @@ python3 generate-cases.py --input ~/resolver-telemetry.jsonl
 
 ## Description Overrides
 
-The classifier's view of each tool/skill is driven by an internal description map (`TOOL_DESCRIPTIONS`, `SKILL_DESCRIPTIONS`). Different deployments need different phrasing — a research-heavy agent benefits from richer `web_search` triggers, an IoT-control agent needs more concrete `nodes` examples, and so on. Forking the plugin to edit descriptions doesn't scale.
+**Descriptions are data, not code.** The classifier's view of each tool/skill is driven by a **catalog** (JSON file), not hardcoded in `index.js`. This means description tuning doesn't require code edits, PRs, or version bumps — operators and orchestrators (like Mission Control) can iterate on phrasing in real-time.
 
-Instead, plugin config accepts two override maps that merge on top of the defaults at boot:
+### Architecture
+
+Two files, three merge layers:
+
+| Layer | File | Who writes | When |
+|-------|------|------------|------|
+| 1. Defaults | `default-catalog.json` (shipped with package) | Plugin maintainers (PRs to this repo) | Release |
+| 2. Inline overrides (legacy) | `openclaw.json` » `toolDescriptionOverrides` / `skillDescriptionOverrides` | Operators | Config edit |
+| 3. File overrides | `catalogOverridesFile` (default `~/.openclaw/resolver-catalog.json`) | Orchestrator (e.g., Mission Control) | Runtime (on human approval) |
+
+Merge rule: later layers override earlier per-key. An unset key in any layer inherits from the layer above.
+
+### default-catalog.json schema
+
+Shipped with the package. See [`schemas/catalog.v1.json`](schemas/catalog.v1.json).
+
+```json
+{
+  "$schema": "./schemas/catalog.v1.json",
+  "schemaVersion": 1,
+  "tools": {
+    "nodes": "Control paired IoT/smart-home devices...",
+    "message": "Send messages, texts, emails..."
+  },
+  "skills": {
+    "github": "GitHub operations: issues, PRs, CI..."
+  }
+}
+```
+
+Community improvements to the default catalog are contributed via PR against `default-catalog.json` — same as any other OSS project. No code review burden for description tweaks.
+
+### Override catalog file
+
+Same schema as `default-catalog.json`. Location is configurable:
 
 ```json
 {
   "plugins": {
     "entries": {
       "openclaw-tool-resolver": {
-        "enabled": true,
         "config": {
-          "llmModel": "gpt-5.4-mini",
-          "llmApiBase": "http://localhost:4000",
-          "llmApiKey": "${LITELLM_KEY}",
-          "telemetryFile": "~/.openclaw/workspace/resolver-telemetry.jsonl",
-          "toolDescriptionOverrides": {
-            "nodes": "Custom IoT description for THIS deployment: lab-bench instruments, pump controllers, sensor arrays",
-            "web_search": "Use only for current pricing/competitive intel; default research goes through internal-kb tool"
-          },
-          "skillDescriptionOverrides": {
-            "github": "Internal GitHub Enterprise instance only — repos prefixed acme/*"
-          }
+          "catalogOverridesFile": "~/.openclaw/resolver-catalog.json"
         }
       }
     }
@@ -263,27 +286,58 @@ Instead, plugin config accepts two override maps that merge on top of the defaul
 }
 ```
 
-### Behavior
+Example override file (per-deployment customization):
 
-- **Per-key merge.** An override for `nodes` replaces just that one entry; every other tool keeps its baked-in description.
-- **Unknown keys are tolerated.** If you override a tool that doesn't exist in your install, the override is simply unused (no error).
-- **No restart required when MC writes overrides** — the plugin reads `config` on each plugin load. After OpenClaw reloads (or on next gateway restart), the overrides take effect on every classifier call.
-- **Logged on activation.** When the plugin loads with overrides, you'll see:
+```json
+{
+  "$schema": "./schemas/catalog.v1.json",
+  "schemaVersion": 1,
+  "tools": {
+    "nodes": "Lab-bench instruments, pump controllers, sensor arrays — use for any physical equipment command",
+    "web_search": "Use only for competitive intel; default research goes through internal-kb tool"
+  },
+  "skills": {
+    "github": "Internal GitHub Enterprise only — repos prefixed acme/*"
+  },
+  "_meta": {
+    "lastModifiedBy": "mission-control",
+    "lastModifiedAt": "2026-04-20T12:00:00Z"
+  }
+}
+```
+
+The `_meta` block is ignored by the plugin but useful for operators tracking provenance.
+
+### Tuning proposal flow (recommended)
+
+The daily tuning cron (see [BENCHMARK-METHODOLOGY.md](BENCHMARK-METHODOLOGY.md)) produces **proposals**, not overrides:
+
+1. Cron reads 24h telemetry → identifies systemic miss patterns
+2. Cron validates each hypothesis against a failure-set benchmark + canonical regression check
+3. Cron writes a machine-readable JSON proposal to `~/.openclaw/workspace/resolver-v2/proposals/YYYY-MM-DD-daily-tuning.json` (schema: [`schemas/proposal.v1.json`](schemas/proposal.v1.json))
+4. Cron also writes a human-readable `.md` proposal alongside
+5. A review surface (Mission Control, or just a human) reads the proposal, approves/rejects entries
+6. On approval, the review surface writes approved deltas to the override catalog file
+7. Plugin reloads the override file on next agent start — new descriptions take effect
+
+**The cron never writes the override file.** Approval is always human (or a human-chain-of-trust via MC). The proposal JSON is the audit trail.
+
+### Behavior notes
+
+- **Per-key merge.** Overriding `nodes` replaces just that entry; everything else keeps its baked-in description.
+- **Unknown keys tolerated.** If you override a tool that doesn't exist in your install, the override is unused — no error.
+- **Missing override file is fine.** If `catalogOverridesFile` points to a file that doesn't exist, the plugin uses defaults only.
+- **Logged on activation:**
   ```
-  [tool-resolver] description overrides active: 2 tool(s), 1 skill(s)
+  [tool-resolver] description overrides active: 2 tool(s), 1 skill(s) (inline: 0, file: 3 from ~/.openclaw/resolver-catalog.json)
   ```
-
-### Use cases
-
-- **Mission Control / orchestrator-driven tuning.** A control plane writes overrides into `openclaw.json` based on production telemetry (e.g., the daily resolver tuning loop — see `BENCHMARK-METHODOLOGY.md`). The plugin honors them without code changes.
-- **Per-host customization across a fleet.** Different agents in a fleet can carry different override sets reflecting their actual tool mix.
-- **A/B testing description changes** before promoting them upstream into the plugin's defaults.
 
 ### What overrides do NOT change
 
 - The set of tools the classifier picks from — that's still `availableTools` from the OpenClaw runtime.
 - Core-tool inclusion (always-on tools).
 - The validation cache / classifier rules / fallback behavior.
+- The classifier model itself (configure via `llmModel`).
 
 Overrides ONLY change the description string the LLM sees for a given tool/skill ID.
 
