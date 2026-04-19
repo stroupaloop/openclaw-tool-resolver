@@ -234,6 +234,58 @@ When `telemetryFile` is configured, the resolver logs one JSONL entry per turn:
 
 `sessionId` and `agentId` are populated from the OpenClaw hook context when available (null otherwise). The classifier API call is tagged with `user: "openclaw-resolver"` and `x-openclaw-caller: tool-resolver` so LiteLLM proxies can filter resolver traffic by caller.
 
+## LiteLLM Tag Attribution
+
+Every classifier request includes a `metadata.tags` field that LiteLLM natively preserves in `LiteLLM_SpendLogs`. This provides reliable cost attribution even when the `user` field is stripped by LiteLLM's internal routing.
+
+### Default tags
+
+Every request always includes:
+```json
+["openclaw-resolver", "resolver:classify"]
+```
+
+These two tags cannot be disabled — they are attribution infrastructure.
+
+### Optional additional tags
+
+Append extra tags via the `telemetry.tags` config option:
+
+```json
+{
+  "plugins": {
+    "openclaw-tool-resolver": {
+      "telemetry": {
+        "tags": ["my-agent", "production"]
+      }
+    }
+  }
+}
+```
+
+Configured tags are **appended** to the defaults:
+```json
+["openclaw-resolver", "resolver:classify", "my-agent", "production"]
+```
+
+### Querying resolver spend in LiteLLM
+
+Filter resolver calls from `LiteLLM_SpendLogs` using the tags JSONB column:
+
+```sql
+-- All resolver spend
+SELECT SUM(spend), COUNT(*)
+FROM "LiteLLM_SpendLogs"
+WHERE metadata->'tags' @> '["openclaw-resolver"]'::jsonb;
+
+-- By agent tag (if you configured telemetry.tags: ["my-agent"])
+SELECT SUM(spend), COUNT(*)
+FROM "LiteLLM_SpendLogs"
+WHERE metadata->'tags' @> '["my-agent"]'::jsonb;
+```
+
+Combined with `user: "openclaw-resolver"` and the `x-openclaw-caller: tool-resolver` header, this gives three independent attribution signals for belt-and-suspenders cost tracking.
+
 **Privacy**: Telemetry captures prompt excerpts by default for debugging. Set `capturePrompts: false` to disable. No telemetry is sent externally — all data stays local.
 
 ## Related Work

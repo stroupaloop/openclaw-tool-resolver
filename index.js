@@ -147,10 +147,11 @@ Rules:
 Respond with ONLY valid JSON: {"tools":["tool_name",...],${availableSkills?.length ? '"skills":["skill_name",...],' : ''}"confidence":<0.0-1.0>,"reasoning":"<10 words max>"}`;
 }
 
-async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey, availableSkills) {
+async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey, availableSkills, sessionId, agentId, extraTags) {
   const t0 = Date.now();
   try {
     const systemPrompt = buildClassificationPrompt(availableTools, availableSkills);
+    const tags = ['openclaw-resolver', 'resolver:classify', ...(extraTags || [])];
     const body = JSON.stringify({
       model,
       messages: [
@@ -160,6 +161,12 @@ async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey
       max_tokens: 200,
       temperature: 0,
       user: 'openclaw-resolver',
+      metadata: {
+        tags,
+        caller: 'openclaw-resolver',
+        session_id: sessionId || null,
+        agent_id: agentId || null,
+      },
     });
 
     const resp = await fetch(`${apiBase}/v1/chat/completions`, {
@@ -391,6 +398,7 @@ export default definePluginEntry({
     const llmApiKey = config.llmApiKey || '';
     const capturePrompts = config.capturePrompts !== false;
     const promptExcerptLength = config.promptExcerptLength || 1500;
+    const extraTags = Array.isArray(config.telemetry?.tags) ? config.telemetry.tags : [];
 
     if (!enabled) {
       api.logger.info?.('[tool-resolver] disabled');
@@ -445,7 +453,7 @@ export default definePluginEntry({
       }
 
       try {
-        const llmResult = await classifyLLMDynamic(prompt, nonCoreTools, llmModel, llmApiBase, llmApiKey, availableSkills);
+        const llmResult = await classifyLLMDynamic(prompt, nonCoreTools, llmModel, llmApiBase, llmApiKey, availableSkills, sessionId, agentId, extraTags);
         counters.llmCalls++;
 
         if (llmResult.error) {

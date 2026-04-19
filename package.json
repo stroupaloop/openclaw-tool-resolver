@@ -1,6 +1,6 @@
 {
   "name": "openclaw-tool-resolver",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Dynamic per-turn tool surface resolver for OpenClaw — LLM classification + keyword validation, 67% token reduction",
   "type": "module",
   "main": "index.js",
