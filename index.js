@@ -75,28 +75,28 @@ const TOOL_DESCRIPTIONS = {
   'finance__refresh_accounts': 'Refresh/sync account data from institutions — use for "refresh my accounts", "update balances", "pull latest data"',
 };
 
-// ── Skill Descriptions (for LLM context) ──────────────────────────────────
+// ── Skill Descriptions (example catalog) ──────────────────────────────────
+//
+// This is an example skill catalog for the classifier's system prompt.
+// Callers should override via plugin config (config.skillDescriptions) to
+// match their actual skill set. Names must match skill IDs available in
+// the caller's OpenClaw installation.
 
 const SKILL_DESCRIPTIONS = {
   '1password': '1Password CLI: secrets, vaults, desktop integration',
-  'coding-agent': 'Delegate coding tasks to Codex/Claude Code/Pi agents',
+  'coding-agent': 'Delegate coding tasks to external coding agents (Codex, Claude Code, etc.)',
   'gh-issues': 'Fetch GitHub issues, spawn agents to fix and open PRs',
   'github': 'GitHub operations: issues, PRs, CI, code review via gh CLI',
-  'healthcheck': 'Host security hardening, firewall/SSH audit, OpenClaw deployment checks',
+  'healthcheck': 'Host security hardening, firewall/SSH audit, deployment checks',
   'himalaya': 'CLI email: list, read, write, reply, search via IMAP/SMTP',
-  'node-connect': 'Diagnose OpenClaw node connection and pairing failures',
   'openai-whisper-api': 'Transcribe audio via OpenAI Whisper API',
-  'skill-creator': 'Create, edit, improve, or audit AgentSkills and SKILL.md files',
+  'skill-creator': 'Create, edit, improve, or audit skills and SKILL.md files',
   'slack': 'Slack operations: reactions, pins, channel actions',
   'tmux': 'Remote-control tmux sessions: send keystrokes, scrape pane output',
   'video-frames': 'Extract frames or clips from videos using ffmpeg',
   'weather': 'Current weather and forecasts via wttr.in or Open-Meteo',
-  'ender-gdrive-research-upload': 'Upload research briefs to Google Drive as Google Docs with audio',
-  'ender-ralph-loop': 'Continuous improvement: decisions, retros, playbooks',
-  'ender-tbpn-voice': 'Write and generate TBPN-style voice briefings with ElevenLabs TTS',
-  'ender-telegram-delivery': 'Deliver messages and audio to AMS GV Telegram supergroup topics',
-  'gmail-oauth': 'Gmail OAuth2 token lifecycle: refresh, validate, escalate',
   'research-qa': 'Pre-delivery QA checklist for research output',
+  'gmail-oauth': 'Gmail OAuth2 token lifecycle: refresh, validate, escalate',
 };
 
 // ── Metadata Stripping ─────────────────────────────────────────────────────
@@ -127,7 +127,7 @@ function buildClassificationPrompt(availableTools, availableSkills) {
     .join('\n');
 
   const skillSection = availableSkills && availableSkills.length > 0
-    ? `\n\nAvailable skills (prompt instructions, not callable tools):\n${availableSkills.map(s => `- ${s}: ${SKILL_DESCRIPTIONS[s] || 'specialized skill'}`).join('\n')}\n\nSkill rules:\n1. Return ONLY skills whose SKILL.md the assistant would need to read for this prompt\n2. If no skills are relevant, return an empty array\n3. Research/writing tasks typically need: research-qa, ender-gdrive-research-upload, ender-tbpn-voice\n4. GitHub/coding tasks typically need: github, coding-agent, gh-issues\n5. Email tasks need: himalaya, gmail-oauth`
+    ? `\n\nAvailable skills (prompt instructions, not callable tools):\n${availableSkills.map(s => `- ${s}: ${SKILL_DESCRIPTIONS[s] || 'specialized skill'}`).join('\n')}\n\nSkill rules:\n1. Return ONLY skills whose SKILL.md the assistant would need to read for this prompt\n2. If no skills are relevant, return an empty array\n3. Match skill selection to the task domain — research/writing, GitHub/coding, email, etc.\n4. When in doubt, include skills that are semantically relevant; the caller decides whether to load them.`
     : '';
 
   return `You are a tool-and-skill routing classifier. Given a user prompt, select ONLY the non-core tools and skills needed for this turn.

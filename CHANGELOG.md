@@ -4,7 +4,24 @@ All notable changes to `openclaw-resolver` (formerly `openclaw-tool-resolver`).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] — 2026-04-19
+## [0.4.1] — 2026-04-19
+
+### Fixed
+
+- **Parse error in v0.4.0 system-prompt template literal.** v0.4.0 introduced unescaped inner backticks (e.g. `` `message` ``) inside the outer template literal that builds the classifier system prompt. JavaScript parsed the first inner backtick as closing the outer template, causing the plugin to fail loading with a `ParseError` at `index.js:144:114`. Fixed by escaping all 30 inner backticks in the template.
+
+### Added
+
+- Pre-commit syntax guard (`.husky/pre-commit`) running `node --check index.js` before every commit.
+- GitHub Actions syntax-check workflow as backstop for pushes/PRs to `main`.
+
+### Known opportunities for improvement (tracked, not resolved here)
+
+- **Cache validation layer is over-broad on conversational prompts** — when the LLM correctly returns an empty selection on status/meta turns ("why did you do X?", system event notifications), the keyword-cache merges ~10 tools based on surface matching. The LLM’s conservative judgment gets overridden unnecessarily. Telemetry shows 53% of classifications hit this path post-v0.4.1. Tracked in [#17](https://github.com/stroupaloop/openclaw-resolver/issues/17).
+- **Description-tuning returns diminishing** — v0.4.0 description edits were net-neutral against the 145-case benchmark (±5pp CI noise). Remaining classifier failures are at the model’s capability ceiling, not description ambiguity. Future gains likely require few-shot examples or post-hoc validation, not more description edits. Tracked in [#13 (weekly tuning cron)](https://github.com/stroupaloop/openclaw-resolver/issues/13).
+- **Benchmark n=145 is underpowered for fine-grained pairwise claims.** Pairwise differences inside ~5pp are within confidence-interval overlap. Roadmap in [BENCHMARK-METHODOLOGY.md](BENCHMARK-METHODOLOGY.md).
+
+## [0.4.0] — 2026-04-19 — ⚠️ BROKEN (use 0.4.1)
 
 ### Tool/skill description tuning pass
 

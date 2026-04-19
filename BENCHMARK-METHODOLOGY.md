@@ -28,7 +28,7 @@ All cases are English professional prompts. No multilingual, adversarial typo, o
 
 | Category | n | Notes |
 |----------|---|-------|
-| financial | 12 | Monarch Money integration |
+| financial | 12 | Financial-tool integration (generic) |
 | research | 15 | Web search, PDF, X/Twitter |
 | messaging | 10 | Single-tool (message), all passing |
 | creative | 11 | Image, video, TTS generation |
