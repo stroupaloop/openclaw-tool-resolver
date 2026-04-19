@@ -36,43 +36,43 @@ const TOOL_DESCRIPTIONS = {
   edit: 'Precise file edits',
   exec: 'Shell commands',
   process: 'Manage background processes',
-  web_search: 'Web search via Brave API',
-  web_fetch: 'Fetch/extract content from URLs',
-  x_search: 'Search X/Twitter posts and trends',
-  browser: 'Browser automation: navigate, click, screenshot, scrape web pages',
+  web_search: 'Web search via Brave API — find current information, research topics, lookup articles, news, competitors, benchmarks',
+  web_fetch: 'Fetch/extract content from URLs — pull docs, articles, pricing pages, status pages, postmortems, SEC filings, any page whose URL is known or implied',
+  x_search: 'Search X/Twitter posts, trends, reactions, sentiment',
+  browser: 'Browser automation: navigate, click, login, fill forms, screenshot — use when you need to interact with a live webpage, NOT for reading uploaded screenshots (use image)',
   canvas: 'Present data visualizations and interactive canvases',
-  nodes: 'Control paired devices: phone camera, notifications, screen recording, location, device status',
-  cron: 'Schedule cron jobs, reminders, recurring tasks, wake events',
-  message: 'Send messages, polls, reactions to Telegram/Slack/Discord channels',
-  gateway: 'OpenClaw gateway: restart, update config, change models, apply settings',
+  nodes: 'Control paired IoT/smart-home devices and physical hardware: speakers, lights, blinds, routers, cameras, phones, displays, notifications, screen recording, location. Use for any "turn on/off", "mute", "reboot", "play", "dim", "open/close", "adjust" on physical devices',
+  cron: 'Schedule cron jobs, reminders, recurring tasks, wake events — use for ANY recurring/repeating/"every day/week/hour" or "remind me in/at" request, and for booking buffers/slots on a repeating schedule',
+  message: 'Send messages, texts, emails, notifications, polls, reactions to Telegram/Slack/Discord/SMS. Use for ANY "tell X", "text X", "notify X", "let X know", "send X a note", "draft a message to X", "apology to X", "thank-you to X", "confirm with X" — anywhere a human recipient needs to be informed',
+  gateway: 'OpenClaw gateway: restart, update config, change models, apply settings. Also for cross-channel delivery (e.g., send to both Slack AND email)',
   agents_list: 'List available agent IDs for spawning',
   sessions_list: 'List active sessions and sub-agents, check agent status',
-  sessions_history: 'Fetch message history from another session',
-  sessions_send: 'Send a message into another session',
-  sessions_spawn: 'Spawn coding agents (Codex, Claude Code), sub-agents, or ACP sessions for complex/coding tasks',
-  sessions_yield: 'End current turn to receive sub-agent results',
-  subagents: 'List, steer, or kill running sub-agents',
+  sessions_history: 'Fetch message history from another session — use for "what did I say about X yesterday", "pull up the earlier thread"',
+  sessions_send: 'Send a message into another session/sub-agent',
+  sessions_spawn: 'Spawn coding agents (Codex, Claude Code, Pi), sub-agents, parallel research agents, or ACP sessions. Use for "spin up X", "launch parallel agents", "kick off agents to", "delegate to"',
+  sessions_yield: 'End current turn to receive sub-agent results — use after sessions_spawn when awaiting parallel output',
+  subagents: 'Coordinate running sub-agents: list, steer, kill. Pair with sessions_spawn when you need to monitor/manage/cancel spawned agents',
   session_status: 'Session status: model, usage, cost, configuration',
-  image: 'Analyze/describe images with vision model',
+  image: 'Analyze/describe images with vision model — use for screenshots, photos, diagrams ALREADY uploaded (not live webpages)',
   image_generate: 'Generate new images from text prompts',
   video_generate: 'Generate videos from prompts or reference images',
-  tts: 'Text-to-speech: convert text to audio/voice',
-  code_execution: 'Run sandboxed Python for calculations and analysis',
-  pdf: 'Analyze PDF documents, extract text and data',
-  memory_search: 'Search memories',
-  memory_add: 'Store memories',
-  memory_delete: 'Delete memories',
-  memory_get: 'Get memory by ID',
-  memory_list: 'List all memories',
-  memory_update: 'Update memory',
-  memory_event_list: 'List memory events',
+  tts: 'Text-to-speech: convert text to spoken audio/voice briefings, voiceovers, narration',
+  code_execution: 'Run sandboxed Python for calculations, data analysis, tabulation, forecasting, dedup, anomaly detection, categorization, CSV/JSON analysis, pattern matching — use whenever the task implies comparing, aggregating, filtering, or programmatically analyzing data (even financial)',
+  pdf: 'Analyze PDF documents, extract text/tables/data',
+  memory_search: 'Fuzzy/semantic search across memories — default for "find memories about X", "what do I remember about Y"',
+  memory_add: 'Store a NEW memory — use for "remember that X", "save this as a memory", "note that Y" (first-time storage)',
+  memory_delete: 'Delete a memory by ID',
+  memory_get: 'Retrieve a SPECIFIC memory by ID or verify it was stored — use for "check if my preference about X was saved", "pull up memory ID N"',
+  memory_list: 'List all memories (browse/inventory) — use for "show me what you remember", "list my stored preferences", "what memories exist about X"',
+  memory_update: 'Modify an EXISTING stored memory (not create new) — use for "update my preference from X to Y", "change my stored X", "revise the note about Y". Distinguish from memory_add (new) by the presence of an update/change verb',
+  memory_event_list: 'List memory audit events',
   memory_event_status: 'Memory event status',
-  'finance__get_accounts': 'Get linked financial accounts',
-  'finance__get_budgets': 'Get budget information',
-  'finance__get_cashflow': 'Analyze cashflow data',
-  'finance__get_transaction_categories': 'List transaction categories',
-  'finance__get_transactions': 'Fetch financial transactions',
-  'finance__refresh_accounts': 'Refresh all financial account data',
+  'finance__get_accounts': 'Get linked financial accounts, balances, institutions — use for "cash position", "account balances", "which accounts", overdrafts, negative balances',
+  'finance__get_budgets': 'Get budgets and category limits — use for "am I over budget", "budget status", "category limits"',
+  'finance__get_cashflow': 'Cashflow analysis (income vs expenses over time) — use for "cash position" trend, cashflow forecast, burn rate, net income over a period',
+  'finance__get_transaction_categories': 'List transaction categories — REQUIRED when filtering/grouping transactions by category, or when checking which categories exist',
+  'finance__get_transactions': 'Fetch transactions with optional filters (account/category/date/amount) — use for "show transactions", "find duplicates", "transactions over $X", "uncategorized transactions"',
+  'finance__refresh_accounts': 'Refresh/sync account data from institutions — use for "refresh my accounts", "update balances", "pull latest data"',
 };
 
 // ── Skill Descriptions (for LLM context) ──────────────────────────────────
@@ -140,9 +140,23 @@ ${toolLines}${skillSection}
 Rules:
 1. Return ONLY the non-core tool names the assistant would actually CALL for this prompt
 2. If no non-core tools are needed, return an empty tools array
-3. Include tools for the complete task (e.g., research needs web_search + web_fetch)
-4. When uncertain or the task spans many domains, include all relevant tools
-5. Short/ambiguous prompts (<20 chars) → return all non-core tools and all skills
+3. Include tools for the complete task — trace every verb:
+   - Any "notify", "tell", "send to", "text", "email", "draft a message", "let X know", "confirm with" → include `message`
+   - Any "every", "recurring", "daily", "weekly", "remind me", "schedule" → include `cron`
+   - Any "spin up", "launch agent", "delegate", "parallel" → include `sessions_spawn`
+   - Any physical device verb ("mute", "turn on", "reboot", "dim", "play") → include `nodes`
+   - Comparison, research, benchmarks, current info → include `web_search` + `web_fetch`
+4. Memory tool disambiguation:
+   - "remember X" / "save X" / "note that Y" (new) → `memory_add`
+   - "update X" / "change my X" / "revise X" (modify existing) → `memory_update`
+   - "find / search memories about X" → `memory_search`
+   - "check if X was stored" / "verify memory Y" → `memory_get`
+   - "list all memories" / "what do you remember" → `memory_list`
+5. Finance tool selection:
+   - "cash position" / "balances" / "which accounts" → `finance__get_accounts` (+ `finance__get_cashflow` if asking about drivers/trends)
+   - "transactions" (any filter) → `finance__get_transactions` (+ `finance__get_transaction_categories` if grouping by category)
+6. When uncertain or the task spans many domains, include all relevant tools (prefer over-inclusion to missing)
+7. Short/ambiguous prompts (<20 chars) → return all non-core tools and all skills
 
 Respond with ONLY valid JSON: {"tools":["tool_name",...],${availableSkills?.length ? '"skills":["skill_name",...],' : ''}"confidence":<0.0-1.0>,"reasoning":"<10 words max>"}`;
 }
