@@ -141,20 +141,20 @@ Rules:
 1. Return ONLY the non-core tool names the assistant would actually CALL for this prompt
 2. If no non-core tools are needed, return an empty tools array
 3. Include tools for the complete task — trace every verb:
-   - Any "notify", "tell", "send to", "text", "email", "draft a message", "let X know", "confirm with" → include `message`
-   - Any "every", "recurring", "daily", "weekly", "remind me", "schedule" → include `cron`
-   - Any "spin up", "launch agent", "delegate", "parallel" → include `sessions_spawn`
-   - Any physical device verb ("mute", "turn on", "reboot", "dim", "play") → include `nodes`
-   - Comparison, research, benchmarks, current info → include `web_search` + `web_fetch`
+   - Any "notify", "tell", "send to", "text", "email", "draft a message", "let X know", "confirm with" → include \`message\`
+   - Any "every", "recurring", "daily", "weekly", "remind me", "schedule" → include \`cron\`
+   - Any "spin up", "launch agent", "delegate", "parallel" → include \`sessions_spawn\`
+   - Any physical device verb ("mute", "turn on", "reboot", "dim", "play") → include \`nodes\`
+   - Comparison, research, benchmarks, current info → include \`web_search\` + \`web_fetch\`
 4. Memory tool disambiguation:
-   - "remember X" / "save X" / "note that Y" (new) → `memory_add`
-   - "update X" / "change my X" / "revise X" (modify existing) → `memory_update`
-   - "find / search memories about X" → `memory_search`
-   - "check if X was stored" / "verify memory Y" → `memory_get`
-   - "list all memories" / "what do you remember" → `memory_list`
+   - "remember X" / "save X" / "note that Y" (new) → \`memory_add\`
+   - "update X" / "change my X" / "revise X" (modify existing) → \`memory_update\`
+   - "find / search memories about X" → \`memory_search\`
+   - "check if X was stored" / "verify memory Y" → \`memory_get\`
+   - "list all memories" / "what do you remember" → \`memory_list\`
 5. Finance tool selection:
-   - "cash position" / "balances" / "which accounts" → `finance__get_accounts` (+ `finance__get_cashflow` if asking about drivers/trends)
-   - "transactions" (any filter) → `finance__get_transactions` (+ `finance__get_transaction_categories` if grouping by category)
+   - "cash position" / "balances" / "which accounts" → \`finance__get_accounts\` (+ \`finance__get_cashflow\` if asking about drivers/trends)
+   - "transactions" (any filter) → \`finance__get_transactions\` (+ \`finance__get_transaction_categories\` if grouping by category)
 6. When uncertain or the task spans many domains, include all relevant tools (prefer over-inclusion to missing)
 7. Short/ambiguous prompts (<20 chars) → return all non-core tools and all skills
 
