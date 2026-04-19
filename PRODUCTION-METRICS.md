@@ -5,17 +5,20 @@
 
 ## Summary
 
-| Metric | Value |
-|--------|-------|
-| Classification events | 444 |
-| Avg events/day | 222 |
-| Avg tool surface reduction | **67%** (38 → 12.5 tools) |
-| Avg tokens saved/turn | **3,707** |
-| Total tokens saved | **1,646,100** |
-| Classification latency (p50) | **1,136ms** |
-| Classification latency (p95) | **2,524ms** |
-| Avg confidence | **0.82** |
-| Resolver overhead | **$0.21 / 1K turns** |
+| Metric | Value | Source |
+|--------|-------|--------|
+| Classification events | 444 | Plugin telemetry |
+| Avg events/day | 222 | Plugin telemetry |
+| Avg tool surface reduction | **67%** (38 → 12.5 tools) | Plugin telemetry |
+| Estimated tokens saved/turn | **~3,700** | Plugin estimate (~150 tokens/tool) |
+| **Measured tokens saved/turn** | **4,048** | **LiteLLM `prompt_tokens` (ground truth)** |
+| **Measured prompt token reduction** | **5.3%** | **LiteLLM (heavy session, ~76K tokens/turn)** |
+| Classification latency (p50) | **1,136ms** | Plugin telemetry |
+| Classification latency (p95) | **2,524ms** | Plugin telemetry |
+| Avg confidence | **0.82** | Plugin telemetry |
+| Resolver overhead | **$0.21 / 1K turns** | API pricing |
+
+> **Measurement methodology:** Ground truth token counts from LiteLLM PostgreSQL `LiteLLM_SpendLogs.prompt_tokens`, which reflects the actual tokens sent to and reported by the provider API. The 5.3% reduction was measured on a heavy session (~76K tokens/turn) where system prompt, workspace files, and conversation history dominate. On lighter sessions where tool definitions represent a larger share of total context, the percentage reduction is proportionally higher.
 
 ## Cost Savings
 
@@ -63,7 +66,14 @@ Average across all 444 events:
 - **After**: 12.5 tools selected
 - **Removed**: 25.4 tools (67%)
 
-This translates to ~3,700 fewer tokens in the system prompt per turn. For Opus-class models, that's **~$0.056 saved per turn** in input costs alone.
+### Plugin estimate vs ground truth
+
+| Method | Tokens saved/turn | Notes |
+|--------|------------------:|-------|
+| Plugin estimate | ~3,700 | Based on ~150 tokens/tool × 25.4 tools removed |
+| LiteLLM measured | **4,048** | Actual `prompt_tokens` delta, includes tool descriptions + parameter schemas + prompt scaffolding |
+
+The measured savings are slightly higher than the plugin estimate because `setActiveToolsByName` also removes parameter schemas and related prompt scaffolding that the per-tool estimate doesn't capture.
 
 ## Validation Layer
 

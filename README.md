@@ -1,10 +1,12 @@
 # openclaw-tool-resolver
 
-Dynamic per-turn tool surface resolver for [OpenClaw](https://github.com/openclaw/openclaw). Reduces token usage by **67%** by intelligently narrowing the tool list before each LLM call.
+Dynamic per-turn tool surface resolver for [OpenClaw](https://github.com/openclaw/openclaw). Intelligently narrows the tool list before each LLM call — reducing context pollution, improving tool selection accuracy, and cutting prompt tokens.
 
 ## The Problem
 
-OpenClaw agents can have 30–50+ tools available. Every tool description is injected into the system prompt on every turn — consuming thousands of tokens regardless of whether the tools are relevant. For premium models like Claude Opus, this costs **$0.05+ per turn** in wasted input tokens.
+OpenClaw agents can have 30–50+ tools available. Every tool description is injected into the system prompt on every turn — consuming thousands of tokens regardless of whether the tools are relevant. This creates two problems:
+1. **Wasted tokens** — tool definitions that will never be called still cost input tokens on every turn
+2. **Context pollution** — the model sees irrelevant tools, increasing the chance of hallucinated or incorrect tool calls
 
 ## How It Works
 
@@ -29,26 +31,43 @@ User prompt → lightweight classifier LLM (~1s, parallel)
 
 > 444 classification events over 2 days of production traffic (single agent, 42 tools)
 
+### Measured Token Savings (Ground Truth)
+
+Verified via LiteLLM `prompt_tokens` — actual tokens sent to the provider API:
+
+| Metric | Before Resolver | After Resolver | Delta |
+|--------|---------------:|---------------:|------:|
+| Avg prompt tokens/turn | 75,877 | 71,829 | **−4,048 (−5.3%)** |
+
+This was measured on a heavy session (~76K tokens/turn) where tool definitions are a small fraction of total context. On lighter sessions where tools represent a larger share, the percentage reduction is proportionally higher.
+
+### Classification Metrics
+
 | Metric | Value |
 |--------|-------|
 | Tool surface reduction | **67%** (38 → 12.5 tools avg) |
-| Tokens saved per turn | **3,707** |
+| Estimated tokens saved per turn | **~3,700** (plugin estimate based on ~150 tokens/tool) |
+| Measured tokens saved per turn | **4,048** (LiteLLM ground truth) |
 | Classification latency (p50) | **1,136ms** |
 | Avg confidence | **0.82** |
 | Resolver cost | **$0.21 / 1K turns** |
 
+> **Note:** The plugin's per-tool token estimate (~150 tokens/tool) is approximate. The LiteLLM measurement captures the actual difference including system prompt rebuilding with `setActiveToolsByName`, which removes tool descriptions, parameter schemas, and related prompt scaffolding.
+
 ### Cost Savings
+
+Based on measured 4,048 tokens saved per turn:
 
 | Primary Model | Savings / 1K turns | Monthly Net* | ROI |
 |---------------|--------------------:|-------------:|----:|
-| Claude Opus 4 ($15/M) | $55.61 | $368.97 | **265x** |
-| Smart Router (blended) | $22.25 | $146.75 | **106x** |
-| Claude Sonnet 4 ($3/M) | $11.12 | $72.68 | **53x** |
-| GPT-5.4 ($2/M) | $7.42 | $47.98 | **35x** |
+| Claude Opus 4 ($15/M) | $60.72 | $403.00 | **288x** |
+| Smart Router (blended) | $24.29 | $160.33 | **115x** |
+| Claude Sonnet 4 ($3/M) | $12.14 | $79.47 | **57x** |
+| GPT-5.4 ($2/M) | $8.10 | $52.58 | **38x** |
 
 *Monthly projection: 6,660 turns/mo. Resolver overhead ($1.40/mo) subtracted.
 
-**Even on the cheapest model, the resolver pays for itself 35x over.**
+**Even on the cheapest model, the resolver pays for itself 38x over.**
 
 ### Benchmark Accuracy (v3.2)
 

@@ -1,6 +1,6 @@
 # Temporary Patching Guide
 
-> **This is a temporary workaround.** Once [openclaw/openclaw#68608](https://github.com/openclaw/openclaw/pull/68608) is merged, install the latest OpenClaw and this patch is no longer needed.
+> **This is a temporary workaround.** Once [openclaw/openclaw#68734](https://github.com/openclaw/openclaw/pull/68734) is merged, install the latest OpenClaw and this patch is no longer needed.
 
 The resolver plugin uses the `before_prompt_build` hook to return `toolsAllow`, which tells OpenClaw to narrow the tool surface. Current OpenClaw (2026.4.15+) fires the hook but doesn't extract `toolsAllow` from the result. Three small patches fix this.
 
@@ -84,9 +84,15 @@ Change `effectiveTools` from `const` to `let`, then add after the hookResult pro
 if (hookResult?.toolsAllow?.length > 0) {
   const allowed = new Set(hookResult.toolsAllow);
   effectiveTools = effectiveTools.filter(t => allowed.has(t.function?.name ?? t.name));
+  // CRITICAL: Update the session's active tools so the model actually sees
+  // the narrowed set. Without this, the session retains the full tool list
+  // captured at createAgentSession time and the filtering is a no-op.
+  activeSession.setActiveToolsByName(hookResult.toolsAllow);
   log.debug(`hooks: toolsAllow narrowed tools ${originalLength} → ${effectiveTools.length}`);
 }
 ```
+
+> **Important:** The `setActiveToolsByName` call is what makes this actually work. It updates `agent.state.tools` and rebuilds the system prompt with only the allowed tools. Without it, `effectiveTools` is filtered in a local variable but the model still receives the full tool list.
 
 ## Verifying the Patch
 
