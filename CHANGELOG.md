@@ -4,6 +4,29 @@ All notable changes to `openclaw-resolver` (formerly `openclaw-tool-resolver`).
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] — 2026-04-19
+
+### Added — Description Overrides (host-level customization)
+
+Plugin config now accepts two new optional override maps that merge over the built-in `TOOL_DESCRIPTIONS` and `SKILL_DESCRIPTIONS` at boot:
+
+- `toolDescriptionOverrides`: `{ [toolId]: "replacement description" }`
+- `skillDescriptionOverrides`: `{ [skillId]: "replacement description" }`
+
+Enables Mission Control or any orchestrator to tune the classifier's view of the tool/skill catalog without modifying the plugin source. Per-key merge: an override for `nodes` replaces just that one entry; everything else keeps its baked-in default. Logged on activation so operators see when overrides are in effect.
+
+See README “Description Overrides” for full details, example config, and integration guidance for control-plane builders.
+
+**API surface added (NOT a breaking change):**
+- `buildClassificationPrompt(availableTools, availableSkills, toolOverrides, skillOverrides)` — last two args optional, default to no-op
+- `classifyLLMDynamic(...prevArgs, toolOverrides, skillOverrides)` — same
+- `openclaw.plugin.json` configSchema declares the two new override fields with descriptions + UI hints
+
+### Why minor version (0.4.1 → 0.5.0)
+
+- New public config surface (`toolDescriptionOverrides`, `skillDescriptionOverrides`) — not just docs/internal
+- Existing installs unaffected: omitting the new fields preserves prior behavior exactly
+
 ## [0.4.1] — 2026-04-19
 
 ### Fixed

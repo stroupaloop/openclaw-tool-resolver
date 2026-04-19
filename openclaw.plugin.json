@@ -23,12 +23,39 @@
         "type": "object",
         "default": {},
         "description": "Named tool profiles: { profileName: { tools: [...], keywords: [...] } }"
+      },
+      "toolDescriptionOverrides": {
+        "type": "object",
+        "default": {},
+        "description": "Override the classifier's description for specific tools. Keys are tool IDs (e.g. 'nodes', 'message'); values are replacement strings. Merged on top of built-in defaults at boot.",
+        "additionalProperties": { "type": "string" }
+      },
+      "skillDescriptionOverrides": {
+        "type": "object",
+        "default": {},
+        "description": "Override the classifier's description for specific skills. Keys are skill IDs (e.g. 'github', 'research-qa'); values are replacement strings. Merged on top of built-in defaults at boot.",
+        "additionalProperties": { "type": "string" }
+      },
+      "telemetry": {
+        "type": "object",
+        "default": {},
+        "description": "Telemetry shape options.",
+        "properties": {
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [],
+            "description": "Extra tags appended to LiteLLM-style metadata.tags on every classifier request. Useful for per-deployment cost attribution."
+          }
+        }
       }
     }
   },
   "uiHints": {
     "enabled": { "label": "Enable Resolver" },
     "logDecisions": { "label": "Log Decisions" },
-    "telemetryFile": { "label": "Telemetry File", "placeholder": "~/.openclaw/workspace/resolver-telemetry.jsonl" }
+    "telemetryFile": { "label": "Telemetry File", "placeholder": "~/.openclaw/workspace/resolver-telemetry.jsonl" },
+    "toolDescriptionOverrides": { "label": "Tool Description Overrides", "placeholder": "{ \"nodes\": \"...\" }" },
+    "skillDescriptionOverrides": { "label": "Skill Description Overrides", "placeholder": "{ \"github\": \"...\" }" }
   }
 }

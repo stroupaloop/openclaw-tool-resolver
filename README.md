@@ -232,6 +232,61 @@ python3 generate-cases.py --input ~/resolver-telemetry.jsonl
 - **precision**: How many selected tools were actually needed
 - **latency**: Classification response time (p50, p95)
 
+## Description Overrides
+
+The classifier's view of each tool/skill is driven by an internal description map (`TOOL_DESCRIPTIONS`, `SKILL_DESCRIPTIONS`). Different deployments need different phrasing — a research-heavy agent benefits from richer `web_search` triggers, an IoT-control agent needs more concrete `nodes` examples, and so on. Forking the plugin to edit descriptions doesn't scale.
+
+Instead, plugin config accepts two override maps that merge on top of the defaults at boot:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "openclaw-tool-resolver": {
+        "enabled": true,
+        "config": {
+          "llmModel": "gpt-5.4-mini",
+          "llmApiBase": "http://localhost:4000",
+          "llmApiKey": "${LITELLM_KEY}",
+          "telemetryFile": "~/.openclaw/workspace/resolver-telemetry.jsonl",
+          "toolDescriptionOverrides": {
+            "nodes": "Custom IoT description for THIS deployment: lab-bench instruments, pump controllers, sensor arrays",
+            "web_search": "Use only for current pricing/competitive intel; default research goes through internal-kb tool"
+          },
+          "skillDescriptionOverrides": {
+            "github": "Internal GitHub Enterprise instance only — repos prefixed acme/*"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Behavior
+
+- **Per-key merge.** An override for `nodes` replaces just that one entry; every other tool keeps its baked-in description.
+- **Unknown keys are tolerated.** If you override a tool that doesn't exist in your install, the override is simply unused (no error).
+- **No restart required when MC writes overrides** — the plugin reads `config` on each plugin load. After OpenClaw reloads (or on next gateway restart), the overrides take effect on every classifier call.
+- **Logged on activation.** When the plugin loads with overrides, you'll see:
+  ```
+  [tool-resolver] description overrides active: 2 tool(s), 1 skill(s)
+  ```
+
+### Use cases
+
+- **Mission Control / orchestrator-driven tuning.** A control plane writes overrides into `openclaw.json` based on production telemetry (e.g., the daily resolver tuning loop — see `BENCHMARK-METHODOLOGY.md`). The plugin honors them without code changes.
+- **Per-host customization across a fleet.** Different agents in a fleet can carry different override sets reflecting their actual tool mix.
+- **A/B testing description changes** before promoting them upstream into the plugin's defaults.
+
+### What overrides do NOT change
+
+- The set of tools the classifier picks from — that's still `availableTools` from the OpenClaw runtime.
+- Core-tool inclusion (always-on tools).
+- The validation cache / classifier rules / fallback behavior.
+
+Overrides ONLY change the description string the LLM sees for a given tool/skill ID.
+
 ## Telemetry
 
 When `telemetryFile` is configured, the resolver logs one JSONL entry per turn:

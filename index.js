@@ -120,14 +120,21 @@ function stripMetadata(prompt) {
 
 // ── Dynamic LLM Classifier ────────────────────────────────────────────────
 
-function buildClassificationPrompt(availableTools, availableSkills) {
+function buildClassificationPrompt(availableTools, availableSkills, toolOverrides, skillOverrides) {
+  // Merge defaults with caller-provided overrides. Overrides take precedence per-key;
+  // any key NOT in the overrides falls back to the baked-in default. This is how
+  // Mission Control or any host-level config customizes the classifier's view of the
+  // tool/skill catalog without forking the plugin. See README "Description Overrides".
+  const toolDesc = { ...TOOL_DESCRIPTIONS, ...(toolOverrides || {}) };
+  const skillDesc = { ...SKILL_DESCRIPTIONS, ...(skillOverrides || {}) };
+
   const toolLines = availableTools
     .filter(t => !CORE_TOOLS.has(t))
-    .map(t => `- ${t}: ${TOOL_DESCRIPTIONS[t] || 'specialized tool'}`)
+    .map(t => `- ${t}: ${toolDesc[t] || 'specialized tool'}`)
     .join('\n');
 
   const skillSection = availableSkills && availableSkills.length > 0
-    ? `\n\nAvailable skills (prompt instructions, not callable tools):\n${availableSkills.map(s => `- ${s}: ${SKILL_DESCRIPTIONS[s] || 'specialized skill'}`).join('\n')}\n\nSkill rules:\n1. Return ONLY skills whose SKILL.md the assistant would need to read for this prompt\n2. If no skills are relevant, return an empty array\n3. Match skill selection to the task domain — research/writing, GitHub/coding, email, etc.\n4. When in doubt, include skills that are semantically relevant; the caller decides whether to load them.`
+    ? `\n\nAvailable skills (prompt instructions, not callable tools):\n${availableSkills.map(s => `- ${s}: ${skillDesc[s] || 'specialized skill'}`).join('\n')}\n\nSkill rules:\n1. Return ONLY skills whose SKILL.md the assistant would need to read for this prompt\n2. If no skills are relevant, return an empty array\n3. Match skill selection to the task domain — research/writing, GitHub/coding, email, etc.\n4. When in doubt, include skills that are semantically relevant; the caller decides whether to load them.`
     : '';
 
   return `You are a tool-and-skill routing classifier. Given a user prompt, select ONLY the non-core tools and skills needed for this turn.
@@ -161,10 +168,10 @@ Rules:
 Respond with ONLY valid JSON: {"tools":["tool_name",...],${availableSkills?.length ? '"skills":["skill_name",...],' : ''}"confidence":<0.0-1.0>,"reasoning":"<10 words max>"}`;
 }
 
-async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey, availableSkills, sessionId, agentId, extraTags) {
+async function classifyLLMDynamic(prompt, availableTools, model, apiBase, apiKey, availableSkills, sessionId, agentId, extraTags, toolOverrides, skillOverrides) {
   const t0 = Date.now();
   try {
-    const systemPrompt = buildClassificationPrompt(availableTools, availableSkills);
+    const systemPrompt = buildClassificationPrompt(availableTools, availableSkills, toolOverrides, skillOverrides);
     const tags = ['openclaw-resolver', 'resolver:classify', ...(extraTags || [])];
     const body = JSON.stringify({
       model,
@@ -414,6 +421,16 @@ export default definePluginEntry({
     const promptExcerptLength = config.promptExcerptLength || 1500;
     const extraTags = Array.isArray(config.telemetry?.tags) ? config.telemetry.tags : [];
 
+    // Description overrides (per-host or per-deployment customization).
+    // Shape: { toolName: 'override description', ... } — same key set as TOOL_DESCRIPTIONS / SKILL_DESCRIPTIONS.
+    // Mission Control or any orchestrator can write these into openclaw.json to tune
+    // classifier behavior without modifying the plugin source. See README "Description Overrides".
+    const toolOverrides = (config.toolDescriptionOverrides && typeof config.toolDescriptionOverrides === 'object') ? config.toolDescriptionOverrides : {};
+    const skillOverrides = (config.skillDescriptionOverrides && typeof config.skillDescriptionOverrides === 'object') ? config.skillDescriptionOverrides : {};
+    if (Object.keys(toolOverrides).length > 0 || Object.keys(skillOverrides).length > 0) {
+      api.logger.info?.(`[tool-resolver] description overrides active: ${Object.keys(toolOverrides).length} tool(s), ${Object.keys(skillOverrides).length} skill(s)`);
+    }
+
     if (!enabled) {
       api.logger.info?.('[tool-resolver] disabled');
       return;
@@ -467,7 +484,7 @@ export default definePluginEntry({
       }
 
       try {
-        const llmResult = await classifyLLMDynamic(prompt, nonCoreTools, llmModel, llmApiBase, llmApiKey, availableSkills, sessionId, agentId, extraTags);
+        const llmResult = await classifyLLMDynamic(prompt, nonCoreTools, llmModel, llmApiBase, llmApiKey, availableSkills, sessionId, agentId, extraTags, toolOverrides, skillOverrides);
         counters.llmCalls++;
 
         if (llmResult.error) {
