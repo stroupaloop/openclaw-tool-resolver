@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+set -e
+
+# ──────────────────────────────────────────────────────────────────────────────
+# openclaw-resolver pre-commit guard
+# Prevents broken commits from reaching main.
+# ──────────────────────────────────────────────────────────────────────────────
+
+echo "🔍 pre-commit: syntax-checking index.js..."
+node --check index.js
+echo "✅ index.js parses OK"
+
+# If package.json version changed, ensure it's also in sync with the prod extension mirror
+if git diff --cached --name-only | grep -q '^package.json$'; then
+  echo "🔍 pre-commit: package.json in this commit — reminder to sync prod extension manually"
+  echo "   Run: cp index.js package.json ~/.openclaw/extensions/openclaw-tool-resolver/"
+fi
+
+# CHANGELOG discipline: if index.js changed, nag (but don't block) for CHANGELOG update
+if git diff --cached --name-only | grep -q '^index\.js$'; then
+  if ! git diff --cached --name-only | grep -q '^CHANGELOG\.md$'; then
+    echo "⚠️  pre-commit: index.js changed but CHANGELOG.md is NOT in this commit."
+    echo "   Add an entry to CHANGELOG.md before pushing for any behavior change."
+  fi
+fi
+
+echo "✅ pre-commit: all checks passed"

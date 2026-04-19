@@ -1,0 +1,27 @@
+name: Syntax Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# GitHub Actions backstop — even if someone bypasses the local husky hook,
+# this enforces the same check at the repo level. Prevents another v0.4.0-style
+# outage where a broken file made it to main.
+
+jobs:
+  parse:
+    name: node --check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse index.js
+        run: node --check index.js
+      - name: Validate package.json
+        run: node -e "JSON.parse(require('fs').readFileSync('package.json'))"
+      - name: Validate plugin manifest
+        run: node -e "JSON.parse(require('fs').readFileSync('openclaw.plugin.json'))"
