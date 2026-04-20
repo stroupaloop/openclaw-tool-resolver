@@ -1,0 +1,52 @@
+# CodeRabbit configuration
+# Docs: https://docs.coderabbit.ai/reference/configuration
+
+language: "en-US"
+
+reviews:
+  profile: "assertive"
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  request_changes_workflow: false
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  changed_files_summary: true
+  estimate_code_review_effort: true
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+
+  path_instructions:
+    - path: "schemas/**"
+      instructions: |
+        Focus on:
+        - JSON Schema correctness and completeness
+        - Breaking changes to existing schemas
+        - Default value safety
+        - Required field validation
+    - path: "benchmark/**"
+      instructions: |
+        Focus on:
+        - Test isolation and reproducibility
+        - Statistical validity of measurements
+        - No hardcoded test data that could leak
+    - path: "src/**"
+      instructions: |
+        Focus on:
+        - Error handling and edge cases
+        - Message delivery reliability (this is a resolver, correctness is critical)
+        - Retry logic and idempotency
+        - Logging and observability hooks
+    - path: ".github/**"
+      instructions: |
+        Focus on:
+        - CI/CD pipeline correctness
+        - Secret handling in workflows
+        - Test coverage gates
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  learnings:
+    scope: "auto"
