@@ -145,7 +145,15 @@ def classify_prompt(prompt: str, tools: list[str] | None = None) -> dict:
             json=body,
             timeout=30.0,
         )
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            # Surface the response body — without this the upstream's diagnostic
+            # message (wrong model name, unsupported response_format, etc.) is
+            # lost and every case just shows a bare HTTP status.
+            body_preview = resp.text[:500] if resp.text else "(empty body)"
+            raise RuntimeError(
+                f"HTTP {resp.status_code} from {LLM_API_BASE}/v1/chat/completions — "
+                f"model={LLM_MODEL!r} body={body_preview}"
+            )
         latency_ms = int((time.monotonic() - start) * 1000)
 
         payload = resp.json()
