@@ -27,7 +27,7 @@ except ImportError:
     import httpx
 
 SCRIPT_DIR = Path(__file__).parent
-BENCHMARK_FILE = SCRIPT_DIR / "benchmark-v3-curated.json"
+BENCHMARK_FILE = SCRIPT_DIR / "benchmark-v3.2-curated.json"
 METRICS_DIR = SCRIPT_DIR.parent / "metrics"
 METRICS_DIR.mkdir(exist_ok=True)
 
