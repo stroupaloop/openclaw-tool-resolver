@@ -1,0 +1,81 @@
+name: GPT-5.5 PR Review (pr-agent)
+
+# Independent GPT-5.5 review via Codium pr-agent. Runs alongside Claude Code
+# Review — two independent perspectives, no shared context. Deliberately
+# broad instructions so this is a true second opinion, not a duplicate of
+# Claude's lens.
+#
+# Requires PR_AGENT_OPENAI_API_KEY in repo secrets. Skipped on PRs from
+# forks (secrets aren't exposed there).
+#
+# Manual triggers: comment `/review`, `/describe`, `/ask <question>`, or
+# `/improve` on a PR to re-run pr-agent. See https://github.com/Codium-ai/pr-agent.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+
+# Cancel in-flight runs on rapid pushes / repeated `/review` comments.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  pr_agent:
+    name: GPT-5.5 Code Review
+    if: >
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run pr-agent (GPT-5.5)
+        # Pinned to SHA of v0.34 — `@main` runs whatever is on the upstream
+        # default branch at run time, with access to OPENAI_API_KEY and
+        # GITHUB_TOKEN write scopes. Bump deliberately when reviewing the diff.
+        uses: Codium-ai/pr-agent@d82f7d3e696cd00822694aaa3096265d3889f3f1 # v0.34
+        env:
+          OPENAI_API_KEY: ${{ secrets.PR_AGENT_OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config.model: "gpt-5.5"
+          config.fallback_models: '["gpt-5.4"]'
+          pr_reviewer.require_score_label: "false"
+          pr_reviewer.enable_review_labels_security: "true"
+          pr_reviewer.num_code_suggestions: "5"
+          pr_reviewer.extra_instructions: |
+            You (GPT-5.5) are one of two independent reviewers on every PR —
+            alongside Claude Sonnet 4.6 via the Anthropic Claude Code action.
+            The reviews run with no shared context. Claude is doing a
+            structured pass on classifier correctness, fallback behavior,
+            benchmark integrity, and public API stability. Lean into what
+            GPT-5.5 catches well: idiomatic JS/ESM patterns, async/await
+            edge cases, error handling around the classifier call, JSON
+            parsing/validation edge cases, performance smells, and anything
+            that doesn't fit a neat category. Don't try to replicate
+            Claude's lens — overlap dilutes the value of having two models
+            on the same diff. Flag what you actually find, not what you
+            expect to find.
+
+            openclaw-resolver is an open-source OpenClaw plugin (npm package
+            `openclaw-resolver`, published under MIT). It's a dynamic per-turn
+            tool surface resolver: a fast classifier LLM narrows a 30–50 tool
+            catalog before each primary-model call (~67% token reduction in
+            production telemetry). Stack: ESM JavaScript (single `index.js`,
+            no TypeScript), JSON schemas in `schemas/`, plugin manifest in
+            `openclaw.plugin.json`, 145-case benchmark in `benchmark/`. Node
+            22 in CI.
+
+            Core invariants that should not be broken:
+            - Core tools (read, write, edit, exec, process, memory_search,
+              memory_add, session_status) are always included regardless of
+              classifier output.
+            - Keyword cache only adds tools, never narrows.
+            - Low-confidence or LLM-error fallback returns the *full* tool
+              surface, not a narrowed one.
+            - Plugin id `openclaw-tool-resolver` must stay valid for back-compat.
