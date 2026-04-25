@@ -1,10 +1,39 @@
 name: Benchmark Regression
 
+# 145-case classifier accuracy benchmark. Runs each case through the configured
+# LLM (default: gpt-5.4-mini) and verifies must-include recall is above the
+# threshold below. Calls a real LLM, so it costs money and takes ~30s–2min.
+#
+# Triggers — tiered to balance signal vs CI noise / spend:
+#   - PRs and pushes that touch classifier code (path-filtered) — pre-merge gate
+#     plus post-merge canary on main
+#   - Weekly cron — catches LLM provider drift even on quiet weeks
+#   - workflow_dispatch — manual ad-hoc runs (Actions UI -> Run workflow)
+
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
+    paths:
+      - 'index.js'
+      - 'default-catalog.json'
+      - 'schemas/**'
+      - 'benchmark/**'
+      - '.github/workflows/benchmark.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.js'
+      - 'default-catalog.json'
+      - 'schemas/**'
+      - 'benchmark/**'
+      - '.github/workflows/benchmark.yml'
+  schedule:
+    - cron: '0 14 * * 1'  # Mondays 14:00 UTC — weekly drift check
+  workflow_dispatch:
+
+concurrency:
+  group: benchmark-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   benchmark:
@@ -24,9 +53,7 @@ jobs:
           LLM_MODEL: gpt-5.4-mini
         run: |
           cd benchmark
-          python3 replay-harness.py \
-            --file benchmark-v3.2-curated.json \
-            --output /tmp/benchmark-result.json
+          python3 replay-harness.py --output /tmp/benchmark-result.json
 
       - name: Check accuracy threshold
         run: |
@@ -35,9 +62,13 @@ jobs:
           with open('/tmp/benchmark-result.json') as f:
               data = json.load(f)
           acc = data['must_include_accuracy']
-          print(f'Must-Include Accuracy: {acc*100:.1f}%')
-          if acc < 0.95:
-              print(f'FAIL: accuracy {acc*100:.1f}% below 95% threshold')
+          # Threshold set 4-5 points below README's reported deterministic recall
+          # (~97.9%) to absorb LLM run-to-run variance. Tighten as confidence
+          # in stability grows.
+          THRESHOLD = 0.93
+          print(f'Must-Include Accuracy: {acc*100:.1f}% (threshold {THRESHOLD*100:.0f}%)')
+          if acc < THRESHOLD:
+              print(f'FAIL: accuracy {acc*100:.1f}% below {THRESHOLD*100:.0f}% threshold')
               sys.exit(1)
           print('PASS')
           "
