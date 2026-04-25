@@ -15,6 +15,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   issue_comment:
+    types: [created]  # don't fire on edit/delete
 
 # Cancel in-flight runs on rapid pushes / repeated `/review` comments.
 concurrency:
@@ -29,11 +30,22 @@ permissions:
 jobs:
   pr_agent:
     name: GPT-5.5 Code Review
+    # Two-layer guard:
+    # - pull_request: skip PRs from forks (secrets aren't exposed there)
+    # - issue_comment: must be (a) on a PR, (b) a slash command (pr-agent's
+    #   only recognized inputs), AND (c) from a trusted association so
+    #   external contributors can't burn API quota or expose this
+    #   secret-bearing workflow to untrusted prompt injection by commenting
+    #   on a fork PR.
     if: >
       (github.event_name == 'pull_request' &&
        github.event.pull_request.head.repo.full_name == github.repository) ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request)
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       startsWith(github.event.comment.body, '/') &&
+       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Run pr-agent (GPT-5.5)
         # Pinned to SHA of v0.34 — `@main` runs whatever is on the upstream
