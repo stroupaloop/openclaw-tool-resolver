@@ -132,10 +132,16 @@ def classify_prompt(prompt: str, tools: list[str] | None = None) -> dict:
                 {"role": "user", "content": prompt[:1500]},
             ],
             "temperature": 0.1,
-            "max_tokens": 300,
         }
-        # json_object mode: supported by OpenAI, may fail on other providers
+        # OpenAI's gpt-5 family + o-series reject the legacy `max_tokens` param
+        # ("Unsupported parameter ... Use 'max_completion_tokens' instead").
+        # Older models still expect `max_tokens`. Pick the right one by family.
         model_lower = LLM_MODEL.lower()
+        if any(k in model_lower for k in ("gpt-5", "o1", "o3", "o4")):
+            body["max_completion_tokens"] = 300
+        else:
+            body["max_tokens"] = 300
+        # json_object mode: supported by OpenAI, may fail on other providers
         if any(k in model_lower for k in ("gpt", "o4", "o3")):
             body["response_format"] = {"type": "json_object"}
 
