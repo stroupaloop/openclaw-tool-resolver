@@ -9,7 +9,7 @@ Dynamic per-turn tool surface resolver for [OpenClaw](https://github.com/opencla
 ## Stack
 
 - JavaScript (ES modules, no TypeScript)
-- Node.js >= 22
+- Node.js >= 18 (per package.json engines; 22+ recommended for development)
 - OpenClaw plugin SDK (`openclaw.plugin.json` manifest)
 - Benchmark suite in Python (`benchmark/`)
 

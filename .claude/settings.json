@@ -1,24 +1,26 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm *)",
+      "Bash(npm test *)",
+      "Bash(npm run *)",
+      "Bash(npm install)",
       "Bash(node *)",
-      "Bash(python3 *)",
-      "Bash(pip *)",
+      "Bash(python3 benchmark/*)",
+      "Bash(pip install *)",
       "Bash(git *)",
-      "Bash(gh *)",
+      "Bash(gh pr *)",
+      "Bash(gh issue *)",
       "Read(*)",
       "Write(index.js)",
       "Write(default-catalog.json)",
       "Write(schemas/**)",
       "Write(benchmark/**)",
-      "Write(CLAUDE.md)",
-      "Write(AGENTS.md)",
-      "Write(README.md)",
-      "Write(CHANGELOG.md)",
       "Write(docs/**)"
     ],
     "deny": [
+      "Write(.claude/**)",
+      "Write(CLAUDE.md)",
+      "Write(AGENTS.md)",
       "Write(.github/workflows/**)"
     ]
   }
