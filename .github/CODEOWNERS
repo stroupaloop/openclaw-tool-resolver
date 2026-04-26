@@ -1,0 +1,7 @@
+# Single-maintainer project. Catch-all keeps every PR routed to @stroupaloop.
+* @stroupaloop
+
+# Workflow files have access to repo secrets — call out explicitly so the
+# requirement survives any future override of the catch-all.
+/.github/workflows/ @stroupaloop
+/.github/dependabot.yml @stroupaloop
