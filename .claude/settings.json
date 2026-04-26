@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "Bash(pip *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Read(*)",
+      "Write(index.js)",
+      "Write(default-catalog.json)",
+      "Write(schemas/**)",
+      "Write(benchmark/**)",
+      "Write(CLAUDE.md)",
+      "Write(AGENTS.md)",
+      "Write(README.md)",
+      "Write(CHANGELOG.md)",
+      "Write(docs/**)"
+    ],
+    "deny": [
+      "Write(.github/workflows/**)"
+    ]
+  }
+}
