@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test *)",
+      "Bash(npm run *)",
+      "Bash(npm install)",
+      "Bash(node *)",
+      "Bash(python3 benchmark/*)",
+      "Bash(pip install *)",
+      "Bash(git *)",
+      "Bash(gh pr *)",
+      "Bash(gh issue *)",
+      "Read(*)",
+      "Write(index.js)",
+      "Write(default-catalog.json)",
+      "Write(schemas/**)",
+      "Write(benchmark/**)",
+      "Write(docs/**)"
+    ],
+    "deny": [
+      "Write(.claude/**)",
+      "Write(CLAUDE.md)",
+      "Write(AGENTS.md)",
+      "Write(.github/workflows/**)"
+    ]
+  }
+}
